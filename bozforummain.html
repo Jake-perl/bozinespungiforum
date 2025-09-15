@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<h1>The Bozine SpungiForum©</h1>
+<p>Sponsored by the DTE© Foundation</p>
+
+<a class="dodgy-button" href="file:///C:/Users/jaken/OneDrive/Desktop/Bozine%20SpungiForum/bozforumlogin.html">
+  LOGIN?!
+</a>
+
+<style>
+  .dodgy-button {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 15px 35px;
+    font-family: "Courier New", monospace;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #ff0000;
+    background: repeating-linear-gradient(
+      45deg,
+      black,
+      black 5px,
+      red 5px,
+      red 10px
+    );
+    border: 3px dashed yellow;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    text-shadow: 0 0 5px #ff0000, 0 0 10px yellow;
+    animation: flicker 0.15s infinite alternate, wobble 0.3s infinite alternate;
+  }
+
+  .dodgy-button:hover {
+    background: black;
+    color: lime;
+    border: 3px solid magenta;
+    text-shadow: 0 0 5px lime, 0 0 15px magenta;
+  }
+
+  @keyframes flicker {
+    from { opacity: 1; }
+    to { opacity: 0.6; }
+  }
+
+  @keyframes wobble {
+    from { transform: rotate(-2deg) scale(1.02); }
+    to { transform: rotate(2deg) scale(0.98); }
+  }
+</style>
+<h2>Boz News</h2>
+<p>None</p>
+
+</html>
