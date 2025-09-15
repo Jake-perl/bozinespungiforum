@@ -1,0 +1,5 @@
+# Redirect all www traffic to non-www
+https://www.bozinespungiforum.net/* https://bozinespungiforum.net/:splat 301!
+
+# Optional: force HTTPS (if needed)
+http://bozinespungiforum.net/* https://bozinespungiforum.net/:splat 301!
