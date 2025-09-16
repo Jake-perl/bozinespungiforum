@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+<head>
+  <title>Bozine SpungiFORUM</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      color: #333;
+    }
+
+    header {
+      background-color: #222;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.5em;
+      font-weight: 800;
+    }
+
+    nav {
+      background-color: #444;
+      padding: 10px;
+      text-align: center;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+      transition: color 0.2s ease-in-out;
+    }
+
+    nav a:hover {
+      color: #0d6efd;
+    }
+
+    .container {
+      display: flex;
+      margin: 20px;
+      gap: 20px;
+    }
+
+    .main {
+      flex: 3;
+    }
+
+    .sidebar {
+      flex: 1;
+      background: #eee;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .category {
+      margin-bottom: 25px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .category h2 {
+      margin: 0;
+      background: #ddd;
+      padding: 10px;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .forum-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .forum-list li {
+      padding: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .forum-list li:first-child {
+      border-top: none;
+    }
+
+    .forum-list a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .forum-list a:hover {
+      color: #0d6efd;
+    }
+
+    footer {
+      background-color: #222;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      margin-top: 20px;
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Bozine SpungiFORUM</h1>
+    <p>A discussions place for Landmarkians.</p>
+  </header>
+
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Register</a>
+    <a href="#">Login</a>
+    <a href="#">Members</a>
+  </nav>
+
+  <div class="container">
+    <div class="main">
+      <div class="category">
+        <h2>General Discussion</h2>
+        <ul class="forum-list">
+          <li><a href="#">Mad</a> — Anything.</li>
+        </ul>
+      </div>
+
+      <div class="category">
+        <h2>Technical Topics</h2>
+        <ul class="forum-list">
+          <li><a href="#">Boz</a> — All about bozes.</li>
+          <li><a href="#">Physics</a> — For hobbyists and enthusiasts.</li>
+        </ul>
+      </div>
+
+      <div class="category">
+        <h2>Community</h2>
+        <ul class="forum-list">
+          <li><a href="#">News & Announcements</a></li>
+          <li><a href="#">Feedback & Suggestions</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <h3>Recent Posts</h3>
+      <ul>
+        <li><a href="#">Coming soon.</a></li>
+        <li><a href="#">Coming soon.</a></li>
+        <li><a href="#">Coming soon.</a></li>
+      </ul>
+
+      <h3>Members Online</h3>
+      <p>Not working yet.</p>
+    </aside>
+  </div>
+
+  <footer>
+    By Jake Nel
+  </footer>
+</body>
+</html>
