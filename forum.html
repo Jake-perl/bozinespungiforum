@@ -159,8 +159,98 @@
     </aside>
   </div>
 
+<head>
+  <title>By the Emperor Clarence</title>
+  <style>
+    body {
+      background: repeating-linear-gradient(45deg, #ff0000, #00ff00 10px, #0000ff 20px);
+      font-family: 'Papyrus', fantasy;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 100px;
+      color: yellow;
+      text-shadow: 5px 5px black;
+      animation: spin 3s linear infinite;
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .bouncer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      font-size: 40px;
+      color: cyan;
+      animation: bounce 2s infinite alternate ease-in-out;
+    }
+
+    @keyframes bounce {
+      0% { top: 0; left: 0; }
+      100% { top: 80%; left: 80%; }
+    }
+
+    .math {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      font-size: 30px;
+      color: lime;
+      background: black;
+      padding: 10px;
+      border: 3px dashed magenta;
+      transform: rotate(-15deg);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1) rotate(-15deg); }
+      50% { transform: scale(1.2) rotate(15deg); }
+      100% { transform: scale(1) rotate(-15deg); }
+    }
+
+    .dodgy-button {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 25px;
+      background: purple;
+      color: white;
+      border: 5px groove orange;
+      padding: 15px;
+      cursor: pointer;
+      animation: flicker 0.5s infinite;
+    }
+
+    @keyframes flicker {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>BY THE EMPEROR CLARENCE</h1>
+  <div class="bouncer">👑 Long Live the Bozine!</div>
+  <div class="math">Clarence = ∞ × Chaos ÷ Logic</div>
+  <button class="dodgy-button" onclick="alert('Clarence has spoken!')">Summon Clarence</button>
+
+</body>
+</html>
+
+  
+
   <footer>
-    By Jake Nel
+    And By Jake Nel
   </footer>
 </body>
 </html>
