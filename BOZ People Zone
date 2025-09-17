@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Boz People Portal</title>
+  <style>
+    body {
+      background: linear-gradient(45deg, #ff00ff, #00ffff);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      color: #ffcc00;
+      animation: shake 0.3s infinite;
+    }
+
+    @keyframes shake {
+      0% { transform: rotate(1deg); }
+      50% { transform: rotate(-1deg); }
+      100% { transform: rotate(1deg); }
+    }
+
+    h1 {
+      font-size: 80px;
+      text-shadow: 3px 3px #000;
+      background-color: #000;
+      padding: 20px;
+      border: 5px dashed red;
+    }
+
+    .boz-button {
+      background-color: #ff0000;
+      color: white;
+      font-size: 30px;
+      padding: 20px;
+      margin: 20px;
+      border: 5px groove lime;
+      cursor: pointer;
+      box-shadow: 0 0 20px yellow;
+    }
+
+    .boz-button:hover {
+      background-color: black;
+      color: lime;
+    }
+
+    .dodgy-link {
+      font-size: 25px;
+      color: cyan;
+      text-decoration: underline wavy red;
+    }
+
+    .math-box {
+      font-size: 40px;
+      color: magenta;
+      background-color: yellow;
+      padding: 10px;
+      margin: 20px;
+      border: 3px dotted black;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>💥 WELCOME TO THE BOZ PEOPLE ZONE 💥</h1>
+
+  <button class="boz-button" onclick="alert('Boz Alert! You triggered the Boz Life Crisis.')">Trigger Crisis</button>
+  <button class="boz-button" onclick="document.body.style.backgroundColor='black'">Go Bust</button>
+  <button class="boz-button" onclick="window.open('https://en.wikipedia.org/wiki/Boz', '_blank')">Boz Lore</button>
+
+  <p class="dodgy-link"><a href="https://bozquarry.biz" target="_blank">Visit Boz Quarry (Definitely Safe)</a></p>
+  <p class="dodgy-link"><a href="https://bozpants.org" target="_blank">Boz Pants Archive</a></p>
+
+  <div class="math-box">
+    Solve this: <br>
+    $$ \text{Boz} = \frac{\text{Sweat} + \text{History}^2}{\text{Bankruptcy} - \text{Facial Hair}} $$
+  </div>
+
+
+
+  <marquee behavior="alternate" scrollamount="20" style="font-size: 50px; color: red;">⚠️ WARNING: BOZ PRESENCE DETECTED ⚠️</marquee>
+
+</body>
+</html>
