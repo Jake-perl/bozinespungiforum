@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mad Retro Google Login</title>
+  <!-- Handwriting font for credits -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Caveat&display=swap');
+
+    /* page reset + noir style */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: monospace;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Glitchy “Google” logo */
+    .logo {
+      font-size: 5em;
+      letter-spacing: .1em;
+      text-shadow:
+        -2px 0 0 #fff,
+         2px 0 0 #fff,
+         0 -2px 0 #fff,
+         0 2px 0 #fff;
+      animation: glitch 1s infinite;
+      margin-bottom: .5em;
+    }
+    @keyframes glitch {
+      0%   { text-shadow: -2px 0 0 red; }
+      20%  { text-shadow: 2px 0 0 cyan; }
+      40%  { text-shadow: -2px 0 0 lime; }
+      60%  { text-shadow: 2px 0 0 magenta; }
+      80%  { text-shadow: -2px 0 0 yellow; }
+      100% { text-shadow: 2px 0 0 white; }
+    }
+
+    /* Center container */
+    .container {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    /* Retro input styles */
+    input {
+      display: block;
+      width: 200px;
+      margin: .5em auto;
+      padding: .5em;
+      background: transparent;
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 1em;
+    }
+    button {
+      padding: .5em 1em;
+      background: #fff;
+      color: #000;
+      border: none;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    /* “by Clarence van Marle” in each corner, handwriting animation */
+    .corner {
+      position: absolute;
+      font-family: 'Caveat', cursive;
+      font-size: 1em;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 0;
+      animation: write 2s forwards;
+    }
+    .corner.top-left     { top: 10px;    left: 10px;    animation-delay: .5s;  }
+    .corner.top-right    { top: 10px;    right: 10px;   animation-delay: 1s;   }
+    .corner.bottom-left  { bottom: 10px; left: 10px;    animation-delay: 1.5s; }
+    .corner.bottom-right { bottom: 10px; right: 10px;   animation-delay: 2s;   }
+
+    @keyframes write {
+      to { width: 13ch; }
+    }
+
+    /* Tiny credit */
+    #credit {
+      position: absolute;
+      bottom: 5px;
+      right: 50%;
+      transform: translateX(50%);
+      font-size: .5em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="corner top-left">by Clarence van Marle</div>
+  <div class="corner top-right">by Clarence van Marle</div>
+  <div class="corner bottom-left">by Clarence van Marle</div>
+  <div class="corner bottom-right">by Clarence van Marle</div>
+  <div id="credit">by Jake Nel</div>
+
+  <div class="container">
+    <div class="logo">G O O G L E</div>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+      <button type="submit">Sign in</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var u = document.getElementById('username').value;
+      var p = document.getElementById('password').value;
+      if (u === 'boz' && p === 'boz') {
+        window.location.href = 'boz.html';
+      } else {
+        alert('Access Denied');
+      }
+    });
+  </script>
+
+</body>
+</html>
