@@ -1,85 +1,89 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Bozine Spungiforum – Dive Deep into the Community</title>
-  <meta name="description" content="Dive deep into the Bozine Spungiforum">
-  
-  <!-- Open Graph for social media previews -->
-  <meta property="og:title" content="Bozine Spungiforum">
-  <meta property="og:description" content="Dive deep into the Bozine Spungiforum">
-  <meta property="og:url" content="https://bozinespungiforum.net/">
-  <meta property="og:type" content="website">
-  
+  <title>Boz Access Portal</title>
+  <style>
+    body {
+      background-color: #ffffff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      border: 1px solid #ccc;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 300px;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #errorMsg {
+      color: red;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+  </style>
 </head>
+<body>
+  <div class="login-container">
+    <h1>Access Code for Boz</h1>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Access Code" required>
+      <button type="submit">Login</button>
+    </form>
+    <p id="errorMsg"></p>
+  </div>
 
-  
-<h1><b>The Bozine SpungiForum©</b></h1>
-<p>Sponsored by the DTE© Foundation</p>
-<hr>
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
 
-<a class="dodgy-button" href="https://bozinespungiforum.net/login">
-  LOGIN?!
-</a>
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
 
-<style>
-  .dodgy-button {
-    display: inline-block;
-    margin-top: 30px;
-    padding: 15px 35px;
-    font-family: "Courier New", monospace;
-    font-size: 1.4em;
-    font-weight: bold;
-    color: #ff0000;
-    background: repeating-linear-gradient(
-      45deg,
-      black,
-      black 5px,
-      red 5px,
-      red 10px
-    );
-    border: 3px dashed yellow;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    text-shadow: 0 0 5px #ff0000, 0 0 10px yellow;
-    animation: flicker 0.15s infinite alternate, wobble 0.3s infinite alternate;
-  }
+      // Replace these with your actual credentials
+      const correctUsername = "bozmaster";
+      const correctPassword = "spungi42";
 
-  .dodgy-button:hover {
-    background: black;
-    color: lime;
-    border: 3px solid magenta;
-    text-shadow: 0 0 5px lime, 0 0 15px magenta;
-  }
-
-  @keyframes flicker {
-    from { opacity: 1; }
-    to { opacity: 0.6; }
-  }
-
-  @keyframes wobble {
-    from { transform: rotate(-2deg) scale(1.02); }
-    to { transform: rotate(2deg) scale(0.98); }
-  }
-</style>
-<p>&nbsp</p>
-<hr>
-<h1><b>Links</b></h1>
-<a href="https://bozinespungiforum.net/dictionary">Dictionary</a>
-<a href="https://bozinespungiforum.net/forum">Forum</a>
-<a href="https://bozinespungiforum.net/formulae">Formulae</a>
-<hr>
-<p>Can you find the secret page?</p>
-<p>&nbsp</p>
-<p>&nbsp</p>
-<p>This website is still in development</p>
-<p>&nbsp</p>
-<p>By Jake Nel</p>
-
-
-
+      if (username === correctUsername && password === correctPassword) {
+        window.location.href = "https://bozinespungiforum.net/boztoppics"; 
+      } else {
+        document.getElementById("errorMsg").textContent = "Access Denied. Invalid Credentials.";
+      }
+    });
+  </script>
+</body>
 </html>
