@@ -70,6 +70,39 @@
       padding: 15px;
       font-size: 0.85em;
     }
+
+    .sub-footer {
+      background-color: #ffffff;
+      color: #555;
+      text-align: center;
+      padding: 10px 40px 10px 10px;
+      font-size: 0.8em;
+      border-top: 1px solid #f0f0f0;
+      position: relative;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .sub-footer button {
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      border: none;
+      background: none;
+      font-size: 1em;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .sub-footer button:hover {
+      color: #333;
+    }
+
+    .hidden {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -78,7 +111,7 @@
   </header>
 
   <main>
-    <a class="login-button" href="https://github.com/Jake-perl">
+    <a class="login-button" href="https://github.com/jake-perl/">
       Github
     </a>
   </main>
@@ -86,5 +119,18 @@
   <footer>
     By Jake Nel
   </footer>
+
+  <div class="sub-footer" id="subFooter">
+    To have access to the full site, send an email to newuser@bozinespungiforum.net to make your free account.
+    <button onclick="dismissFooter()">✕</button>
+  </div>
+
+  <script>
+    function dismissFooter() {
+      const subFooter = document.getElementById("subFooter");
+      subFooter.classList.add("hidden");
+      setTimeout(() => subFooter.remove(), 300); // remove from DOM after animation
+    }
+  </script>
 </body>
 </html>
