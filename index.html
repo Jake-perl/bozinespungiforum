@@ -21,6 +21,7 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
       width: 300px;
+      position: relative;
     }
 
     h1 {
@@ -54,6 +55,19 @@
       margin-top: 10px;
       font-size: 13px;
     }
+
+    .continue-link {
+      display: block;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #777;
+      text-decoration: none;
+    }
+
+    .continue-link:hover {
+      text-decoration: underline;
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -65,6 +79,7 @@
       <button type="submit">Login</button>
     </form>
     <p id="errorMsg"></p>
+    <a href="https://bozinespungiforum.net/modern" class="continue-link">Continue without logging in</a>
   </div>
 
   <script>
