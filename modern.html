@@ -5,42 +5,32 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      background-color: #ffffff;
+      color: #111;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
     }
 
     header {
-      background-color: #222;
-      color: #fff;
-      padding: 20px;
-      text-align: center;
+      background-color: #ffffff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     header h1 {
       margin: 0;
-      font-size: 3em;
-      font-weight: 900;
-      letter-spacing: 2px;
-    }
-
-    nav {
-      margin-top: 15px;
-    }
-
-    nav a {
-      margin: 0 15px;
-      text-decoration: none;
-      color: #0d6efd;
-      font-weight: bold;
-      transition: color 0.2s ease-in-out;
-    }
-
-    nav a:hover {
-      color: #0056b3;
+      font-size: 1.5em;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: -0.5px;
     }
 
     main {
@@ -49,47 +39,47 @@
       justify-content: center;
       align-items: center;
       text-align: center;
+      padding: 40px 20px;
     }
 
     .login-button {
       display: inline-block;
-      padding: 15px 40px;
-      font-size: 1.2em;
-      font-weight: bold;
+      padding: 14px 32px;
+      font-size: 1em;
+      font-weight: 600;
       color: #fff;
-      background-color: #0d6efd;
+      background-color: #10a37f;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       text-decoration: none;
-      transition: background-color 0.3s ease-in-out, transform 0.1s ease-in-out;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: background-color 0.2s ease, transform 0.1s ease;
     }
 
     .login-button:hover {
-      background-color: #0056b3;
-      transform: scale(1.05);
+      background-color: #0e8f70;
+      transform: scale(1.03);
     }
 
     footer {
-      background-color: #222;
-      color: #fff;
+      background-color: #fafafa;
+      border-top: 1px solid #e5e5e5;
+      color: #666;
       text-align: center;
       padding: 15px;
-      font-size: 0.9em;
+      font-size: 0.85em;
     }
   </style>
 </head>
 <body>
   <header>
     <h1>BZSF</h1>
-    <nav>
-      <a href="file:///C:/Users/jaken/OneDrive/Desktop/Bozine%20SpungiForum/bozforumdictionary.html">Dictionary</a>
-    </nav>
   </header>
 
   <main>
-    <a class="login-button" href="file:///C:/Users/jaken/OneDrive/Desktop/Bozine%20SpungiForum/bozforumlogin.html">
-      Login
+    <a class="login-button" href="https://github.com/Jake-perl">
+      Github
     </a>
   </main>
 
