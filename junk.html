@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Boz Access Portal</title>
+  <style>
+    body {
+      background-color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(20, 20px);
+      grid-template-rows: repeat(20, 20px);
+      gap: 5px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .dot {
+      width: 20px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .dot.active {
+      background-color: #333;
+    }
+
+    #errorMsg {
+      color: red;
+      font-size: 13px;
+    }
+
+    .continue-link {
+      display: block;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #777;
+      text-decoration: none;
+    }
+
+    .continue-link:hover {
+      text-decoration: underline;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Join the Dots to Access BZSF</h1>
+    <div class="grid" id="dotGrid"></div>
+    <button onclick="validatePattern()">Submit Pattern</button>
+    <p id="errorMsg"></p>
+    <a href="https://bozinespungiforum.net/modern" class="continue-link">Continue without logging in</a>
+  </div>
+
+  <script>
+    const grid = document.getElementById("dotGrid");
+    const activeDots = [];
+
+    // Generate 20x20 grid
+    for (let i = 0; i < 400; i++) {
+      const dot = document.createElement("div");
+      dot.classList.add("dot");
+      dot.dataset.index = i;
+      dot.addEventListener("click", () => {
+        dot.classList.toggle("active");
+        const index = parseInt(dot.dataset.index);
+        if (activeDots.includes(index)) {
+          activeDots.splice(activeDots.indexOf(index), 1);
+        } else {
+          activeDots.push(index);
+        }
+      });
+      grid.appendChild(dot);
+    }
+
+    // Define correct pattern (example indices that spell "BOZ")
+    const correctPattern = [22, 42, 62, 82, 102, 123, 144, 165, 186, 207]; // Replace with actual "BOZ" shape
+
+    function validatePattern() {
+      const sorted = [...activeDots].sort((a, b) => a - b);
+      const correct = correctPattern.sort((a, b) => a - b);
+      if (JSON.stringify(sorted) === JSON.stringify(correct)) {
+        window.location.href = "https://bozinespungiforum.net/main";
+      } else {
+        document.getElementById("errorMsg").textContent = "Access Denied. Incorrect Dot Pattern.";
+      }
+    }
+  </script>
+</body>
+</html>
