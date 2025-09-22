@@ -5,7 +5,7 @@
   <title>Boz Access Portal</title>
   <style>
     body {
-      background-color: #fff;
+      background-color: #ffffff;
       font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
@@ -15,7 +15,12 @@
     }
 
     .login-container {
+      border: 1px solid #ccc;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
+      width: 300px;
     }
 
     h1 {
@@ -24,30 +29,29 @@
       color: #333;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(20, 20px);
-      grid-template-rows: repeat(20, 20px);
-      gap: 5px;
-      justify-content: center;
-      margin-bottom: 20px;
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
     }
 
-    .dot {
-      width: 20px;
-      height: 20px;
-      background-color: #ccc;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .dot.active {
+    button {
+      width: 100%;
+      padding: 10px;
       background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
     }
 
     #errorMsg {
       color: red;
+      margin-top: 10px;
       font-size: 13px;
     }
 
@@ -67,46 +71,33 @@
 </head>
 <body>
   <div class="login-container">
-    <h1>Join the Dots to Access BZSF</h1>
-    <div class="grid" id="dotGrid"></div>
-    <button onclick="validatePattern()">Submit Pattern</button>
+    <h1>Sign in to BZSF</h1>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Access Code" required>
+      <button type="submit">Login</button>
+    </form>
     <p id="errorMsg"></p>
     <a href="https://bozinespungiforum.net/modern" class="continue-link">Continue without logging in</a>
   </div>
 
   <script>
-    const grid = document.getElementById("dotGrid");
-    const activeDots = [];
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
 
-    // Generate 20x20 grid
-    for (let i = 0; i < 400; i++) {
-      const dot = document.createElement("div");
-      dot.classList.add("dot");
-      dot.dataset.index = i;
-      dot.addEventListener("click", () => {
-        dot.classList.toggle("active");
-        const index = parseInt(dot.dataset.index);
-        if (activeDots.includes(index)) {
-          activeDots.splice(activeDots.indexOf(index), 1);
-        } else {
-          activeDots.push(index);
-        }
-      });
-      grid.appendChild(dot);
-    }
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
 
-    // Define correct pattern (example indices that spell "BOZ")
-    const correctPattern = [22, 42, 62, 82, 102, 123, 144, 165, 186, 207]; // Replace with actual "BOZ" shape
+      // Replace these with your actual credentials
+      const correctUsername = "bozmaster";
+      const correctPassword = "spungi42";
 
-    function validatePattern() {
-      const sorted = [...activeDots].sort((a, b) => a - b);
-      const correct = correctPattern.sort((a, b) => a - b);
-      if (JSON.stringify(sorted) === JSON.stringify(correct)) {
+      if (username === correctUsername && password === correctPassword) {
         window.location.href = "https://bozinespungiforum.net/main";
       } else {
-        document.getElementById("errorMsg").textContent = "Access Denied. Incorrect Dot Pattern.";
+        document.getElementById("errorMsg").textContent = "Access Denied. Invalid Credentials.";
       }
-    }
+    });
   </script>
 </body>
 </html>
