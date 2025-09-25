@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Infinite Wordle</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 2rem;
+    }
+
+    #board {
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .tile {
+      width: 60px;
+      height: 60px;
+      border: 2px solid #ccc;
+      text-transform: uppercase;
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
+      line-height: 60px;
+      box-sizing: border-box;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .correct {
+      background-color: #6aaa64;
+      color: white;
+      border-color: #6aaa64;
+    }
+
+    .present {
+      background-color: #c9b458;
+      color: white;
+      border-color: #c9b458;
+    }
+
+    .absent {
+      background-color: #787c7e;
+      color: white;
+      border-color: #787c7e;
+    }
+
+    #input-container {
+      margin-top: 20px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 1.2rem;
+      width: 200px;
+      text-transform: uppercase;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Infinite Wordle</h1>
+
+  <div id="board"></div>
+
+  <div id="input-container">
+    <input type="text" id="guess-input" maxlength="5" autofocus>
+    <button onclick="submitGuess()">Submit</button>
+    <button onclick="resetGame()">Reset</button>
+  </div>
+
+  <div id="message"></div>
+
+  <script>
+    const words = [
+  "apple", "grape", "track", "crane", "sugar", "broom", "flame", "brave", "sound", "flash",
+  "table", "chair", "plant", "green", "piano", "brick", "clown", "crown", "drain", "plain",
+  "stone", "slope", "flock", "blaze", "troop", "shore", "smile", "grind", "sweet", "rough",
+  "thing", "light", "dream", "cream", "place", "ghost", "laugh", "lunch", "fruit", "paper",
+  "spice", "globe", "voice", "vocal", "tiger", "zebra", "giant", "habit", "kneel", "liver",
+  "mango", "neigh", "ocean", "pearl", "query", "ranch", "scale", "theme", "uncle", "vivid",
+  "wagon", "xenon", "yield", "zesty", "abide", "beast", "cabin", "dairy", "eagle", "faint",
+  "gauge", "haste", "ivory", "jolly", "karma", "lemon", "medal", "naval", "opera", "penny",
+  "quake", "river", "solid", "torch", "urban", "value", "wheat", "xylem", "youth", "zonal",
+  "angle", "bleed", "chess", "demon", "evoke", "fjord", "glide", "haste", "inbox", "joker",
+  "knead", "latch", "mimic", "noble", "orbit", "prism", "quilt", "risky", "sneak", "treat",
+  "upset", "voter", "wrist", "xenon", "yacht", "zebra", "asset", "basic", "chore", "donut",
+  "entry", "fetch", "grasp", "honey", "irony", "jelly", "knack", "lunar", "miner", "nurse",
+  "onion", "proud", "quick", "ridge", "shine", "tulip", "ultra", "verse", "wound", "xenon",
+  "yodel", "zesty", "adore", "blush", "cigar", "delve", "eager", "flute", "grill", "hover",
+  "icing", "jaunt", "kneel", "lobby", "motel", "noisy", "oxide", "pinto", "quack", "reign",
+  "scrub", "toast", "udder", "vigor", "whale", "xenon", "yeast", "zonal", "angel", "brisk",
+  "cable", "dodge", "elbow", "frown", "grape", "hippo", "index", "jumpy", "koala", "lapse",
+  "moose", "ninja", "ozone", "plaza", "quirk", "rider", "sling", "trick", "ulcer", "vapor",
+  "waltz", "xylem", "yarns", "zincs", "amble", "blitz", "crate", "drift", "ember", "facet",
+  "gloom", "haste", "ideal", "joint", "knees", "leash", "mirth", "noose", "opine", "pivot",
+  "quart", "rouge", "stoic", "twine", "urine", "visor", "woven", "xerox", "yield", "zebra",
+  "after", "beach", "cough", "ditch", "envoy", "fable", "grime", "hatch", "icing", "jeans",
+  "karma", "linen", "medic", "nudge", "olive", "plume", "quail", "raven", "siren", "thick",
+  "uncut", "vixen", "wager", "xerox", "yours", "zappy", "adapt", "bloom", "cater", "daisy",
+  "eclat", "faith", "gleam", "harsh", "ivies", "jewel", "knead", "leapt", "mimic", "nicer",
+  "ounce", "prawn", "quake", "relax", "shove", "tempt", "upset", "vivid", "witty", "xenon",
+  "yogis", "zoned"
+];
+
+    let targetWord = "";
+    let currentRow = 0;
+    const maxRows = 6;
+    const board = document.getElementById("board");
+
+    function createBoard() {
+      board.innerHTML = '';
+      for (let i = 0; i < maxRows; i++) {
+        const row = document.createElement('div');
+        row.className = 'row';
+        for (let j = 0; j < 5; j++) {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          row.appendChild(tile);
+        }
+        board.appendChild(row);
+      }
+    }
+
+    function pickWord() {
+      const randomIndex = Math.floor(Math.random() * words.length);
+      targetWord = words[randomIndex];
+      console.log("Target Word:", targetWord); // For testing
+    }
+
+    function submitGuess() {
+      const input = document.getElementById("guess-input");
+      const guess = input.value.toLowerCase();
+
+      if (guess.length !== 5 || !/^[a-zA-Z]+$/.test(guess)) {
+        showMessage("Please enter a valid 5-letter word.");
+        return;
+      }
+
+      if (currentRow >= maxRows) return;
+
+      const row = board.children[currentRow];
+      const targetLetters = targetWord.split('');
+      const guessLetters = guess.split('');
+
+      // First pass: correct positions
+      const result = guessLetters.map((letter, i) => {
+        if (letter === targetLetters[i]) {
+          targetLetters[i] = null; // prevent duplicate yellow
+          return 'correct';
+        }
+        return null;
+      });
+
+      // Second pass: present letters
+      guessLetters.forEach((letter, i) => {
+        if (!result[i]) {
+          const index = targetLetters.indexOf(letter);
+          if (index !== -1) {
+            result[i] = 'present';
+            targetLetters[index] = null;
+          } else {
+            result[i] = 'absent';
+          }
+        }
+      });
+
+      // Display result
+      for (let i = 0; i < 5; i++) {
+        const tile = row.children[i];
+        tile.textContent = guess[i];
+        tile.classList.add(result[i]);
+      }
+
+      if (guess === targetWord) {
+        showMessage("🎉 You guessed it!");
+        disableInput();
+        return;
+      }
+
+      currentRow++;
+      input.value = "";
+
+      if (currentRow === maxRows) {
+        showMessage(`❌ Out of tries! The word was "${targetWord.toUpperCase()}".`);
+        disableInput();
+      }
+    }
+
+    function showMessage(msg) {
+      document.getElementById("message").textContent = msg;
+    }
+
+    function disableInput() {
+      document.getElementById("guess-input").disabled = true;
+    }
+
+    function enableInput() {
+      const input = document.getElementById("guess-input");
+      input.disabled = false;
+      input.value = "";
+      input.focus();
+    }
+
+    function resetGame() {
+      currentRow = 0;
+      createBoard();
+      pickWord();
+      showMessage("");
+      enableInput();
+    }
+
+    // Init
+    resetGame();
+  </script>
+</body>
+</html>
