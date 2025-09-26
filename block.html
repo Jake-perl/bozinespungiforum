@@ -1,91 +1,166 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Tor Browser Setup Guide</title>
+  <title>Unlock Securly Block Guide</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 40px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      color: #cccccc;
+    }
+    .login-box {
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    input {
+      padding: 12px;
+      margin: 10px;
+      width: 220px;
+      border: none;
+      border-radius: 6px;
+      background-color: #2a2a2a;
+      color: #fff;
+      font-size: 1em;
+    }
+    button {
+      padding: 12px 24px;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #666;
+    }
+    #secretContent {
+      display: none;
+      background-color: #1a1a1a;
+      color: #e0e0e0;
       padding: 40px;
       line-height: 1.6;
       max-width: 800px;
-      margin: auto;
-    }
-    h1, h2 {
-      color: #2c3e50;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
     }
     .section {
-      background-color: #ffffff;
+      background-color: #2a2a2a;
       padding: 20px;
       margin-bottom: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      border-radius: 10px;
     }
     .disclaimer {
-      background-color: #ffe0e0;
+      background-color: #3a3a3a;
       padding: 20px;
-      border-left: 5px solid #e74c3c;
+      border-left: 5px solid #ff4444;
       font-size: 0.95em;
+    }
+    a {
+      color: #00bcd4;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
-<div class="section">
-  <h2>🛡️ How to Block Securly</h2>
-  <p>Securly is a web filtering tool often used in schools to block certain websites. If you're trying to access privacy tools like Tor or VPNs and Securly is in the way, here are some safe and responsible steps:</p>
-  <ul>
-    <li>Use a VPN before connecting to your school network. This may prevent Securly from seeing your traffic.</li>
-    <li>Try accessing Tor Browser from a personal device not managed by your school.</li>
-    <li>Use mobile data or a hotspot instead of school Wi-Fi to avoid filtering.</li>
-    <li>If you're on a Chromebook, enable Linux (Beta) and install Tor through the Linux terminal.</li>
-    <li>Use Bridges in Tor Browser to disguise your traffic and bypass filtering.</li>
-  </ul>
-  <p><strong>Important:</strong> Never attempt to bypass Securly on school-owned devices without permission. Always respect your institution’s rules and use privacy tools responsibly.</p>
-</div>
-
 <body>
 
-  <h1>🛡️ How to Download and Use Tor Browser Securely</h1>
-
-  <div class="section">
-    <h2>📥 Download Tor Browser</h2>
-    <ul>
-      <li><strong>Windows:</strong> Go to <a href="https://www.torproject.org/download/" target="_blank">torproject.org/download</a> and choose the Windows version. Run the installer and follow the setup instructions.</li>
-      <li><strong>macOS:</strong> Visit the same link and select the macOS version. Drag the Tor Browser into your Applications folder.</li>
-      <li><strong>Linux:</strong> Download the Linux version from the site. Extract the folder and run the `start-tor-browser.desktop` file.</li>
-      <li><strong>Chromebook:</strong> Enable Linux (Beta) in your settings, then follow the Linux instructions above.</li>
-      <li><strong>iOS:</strong> Tor Browser is not officially available on iOS. Use the Onion Browser from the App Store, developed by the Tor Project.</li>
-    </ul>
+  <h1>🔐 Enter Code to Unlock</h1>
+  <div class="login-box">
+    <input type="text" id="code" placeholder="Enter Code">
+    <input type="password" id="password" placeholder="Enter Password">
+    <br>
+    <button onclick="checkLogin()">Unlock</button>
   </div>
 
-  <div class="section">
-    <h2>🔒 Turn On a VPN</h2>
-    <p>Using a VPN with Tor adds an extra layer of privacy. Here's how to do it:</p>
-    <ol>
-      <li>Choose a trusted VPN provider (e.g. ProtonVPN, Mullvad, NordVPN).</li>
-      <li>Download and install the VPN app for your device.</li>
-      <li>Connect to a server before launching Tor Browser.</li>
-      <li>Once connected, open Tor Browser and begin browsing anonymously.</li>
-    </ol>
-    <p><strong>Note:</strong> VPN first, then Tor = more privacy. Tor first, then VPN = different use case (less common).</p>
+  <div id="secretContent">
+    <div class="section">
+      <h2>🛡️ How to Block Securly</h2>
+      <p>Securly is a web filtering tool often used in schools to block certain websites. If you're trying to access privacy tools like Tor or VPNs and Securly is in the way, here are some safe and responsible steps:</p>
+      <ul>
+        <li>Use a VPN before connecting to your school network. This may prevent Securly from seeing your traffic.</li>
+        <li>Try accessing Tor Browser from a personal device not managed by your school.</li>
+        <li>Use mobile data or a hotspot instead of school Wi-Fi to avoid filtering.</li>
+        <li>If you're on a Chromebook, enable Linux (Beta) and install Tor through the Linux terminal.</li>
+        <li>Use Bridges in Tor Browser to disguise your traffic and bypass filtering.</li>
+      </ul>
+      <p><strong>Important:</strong> Never attempt to bypass Securly on school-owned devices without permission. Always respect your institution’s rules and use privacy tools responsibly.</p>
+    </div>
+
+    <h1>🛡️ How to Download and Use Tor Browser Securely</h1>
+
+    <div class="section">
+      <h2>📥 Download Tor Browser</h2>
+      <ul>
+        <li><strong>Windows:</strong> Go to <a href="https://www.torproject.org/download/" target="_blank">torproject.org/download</a> and choose the Windows version. Run the installer and follow the setup instructions.</li>
+        <li><strong>macOS:</strong> Visit the same link and select the macOS version. Drag the Tor Browser into your Applications folder.</li>
+        <li><strong>Linux:</strong> Download the Linux version from the site. Extract the folder and run the <code>start-tor-browser.desktop</code> file.</li>
+        <li><strong>Chromebook:</strong> Enable Linux (Beta) in your settings, then follow the Linux instructions above.</li>
+        <li><strong>iOS:</strong> Tor Browser is not officially available on iOS. Use the Onion Browser from the App Store, developed by the Tor Project.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>🔒 Turn On a VPN</h2>
+      <p>Using a VPN with Tor adds an extra layer of privacy. Here's how to do it:</p>
+      <ol>
+        <li>Choose a trusted VPN provider (e.g. ProtonVPN, Mullvad, NordVPN).</li>
+        <li>Download and install the VPN app for your device.</li>
+        <li>Connect to a server before launching Tor Browser.</li>
+        <li>Once connected, open Tor Browser and begin browsing anonymously.</li>
+      </ol>
+      <p><strong>Note:</strong> VPN first, then Tor = more privacy. Tor first, then VPN = different use case (less common).</p>
+    </div>
+
+    <div class="section">
+      <h2>🧭 Bypass Securely</h2>
+      <p>If you're trying to access blocked content or bypass restrictions:</p>
+      <ul>
+        <li>Use <strong>Bridges</strong> in Tor Browser settings to avoid censorship.</li>
+        <li>Enable <strong>Snowflake</strong> or <strong>obfs4</strong> bridges for stealth access.</li>
+        <li>Always keep your VPN active while using Tor.</li>
+        <li>Never log into personal accounts while using Tor for bypassing.</li>
+      </ul>
+    </div>
+
+    <div class="disclaimer">
+      <h2>⚠️ Disclaimer</h2>
+      <p>This guide is for educational and privacy-protection purposes only. Using Tor or VPNs to access illegal content, violate terms of service, or bypass laws is strictly discouraged. Always respect local regulations and use privacy tools responsibly.</p>
+    </div>
   </div>
 
-  <div class="section">
-    <h2>🧭 Bypass Securely</h2>
-    <p>If you're trying to access blocked content or bypass restrictions:</p>
-    <ul>
-      <li>Use <strong>Bridges</strong> in Tor Browser settings to avoid censorship.</li>
-      <li>Enable <strong>Snowflake</strong> or <strong>obfs4</strong> bridges for stealth access.</li>
-      <li>Always keep your VPN active while using Tor.</li>
-      <li>Never log into personal accounts while using Tor for bypassing.</li>
-    </ul>
-  </div>
-
-  <div class="disclaimer">
-    <h2>⚠️ Disclaimer</h2>
-    <p>This guide is for educational and privacy-protection purposes only. Using Tor or VPNs to access illegal content, violate terms of service, or bypass laws is strictly discouraged. Always respect local regulations and use privacy tools responsibly.</p>
-  </div>
+  <script>
+    function checkLogin() {
+      const code = document.getElementById("code").value;
+      const password = document.getElementById("password").value;
+      if (code === "22" && password === "4444") {
+        document.getElementById("secretContent").style.display = "block";
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      } else {
+        alert("Incorrect code or password.");
+      }
+    }
+  </script>
 
 </body>
 </html>
