@@ -1,105 +1,89 @@
-<!doctype html>
-<html>
+<h2>Support Bozine Spungifoum</h2>
+<p>If you donate £5 or more, you'll receive the Premium Account password!</p>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Bozine Spungiforum – Dive Deep into the Community</title>
-  <meta name="description" content="Dive deep into the Bozine Spungiforum">
-  
-  <!-- Open Graph for social media previews -->
-  <meta property="og:title" content="Bozine Spungiforum">
-  <meta property="og:description" content="Dive deep into the Bozine Spungiforum">
-  <meta property="og:url" content="https://bozinespungiforum.net/">
-  <meta property="og:type" content="website">
-  
-</head>
-<form onsubmit="searchDuckDuckGo(event)">
-  <input type="text" id="searchInput" placeholder="Search anonymously" required>
-  <button type="submit">Search</button>
+<form id="donationForm" onsubmit="handleDonation(event)">
+  <label for="amount">Donation Amount (£):</label>
+  <input type="number" id="amount" name="amount" min="1" required>
+  <button type="submit">Donate</button>
 </form>
 
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=GBP"></script>
+
+<div id="paypal-button-container"></div>
+
+<!-- Load PayPal SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=GBP"></script>
+
+<!-- Button Container -->
+<div id="paypal-button-container"></div>
+
+<!-- Button Logic -->
 <script>
-function searchDuckDuckGo(e) {
-  e.preventDefault();
-  const query = document.getElementById("searchInput").value;
-  const url = "https://duckduckgo.com/?q=" + encodeURIComponent(query);
-  window.open(url, "_blank");
-}
+paypal.Buttons({
+  createOrder: function(data, actions) {
+    return actions.order.create({
+      purchase_units: [{
+        amount: {
+          value: '5.00' // Minimum donation
+        }
+      }]
+    });
+  },
+  onApprove: function(data, actions) {
+    return actions.order.capture().then(function(details) {
+      alert('Thank you, ' + details.payer.name.given_name + '! Your Premium password is: bozmaster2025');
+      window.location.href = "thankyou.html";
+    });
+  }
+}).render('#paypal-button-container');
 </script>
 
-  
-<h1><b>The Bozine SpungiForum©</b></h1>
-<p>Sponsored by the DTE© Foundation</p>
-<hr>
 
-<a class="dodgy-button" href="https://bozinespungiforum.net/login">
-  LOGIN?!
-</a>
-
-<style>
-  .dodgy-button {
-    display: inline-block;
-    margin-top: 30px;
-    padding: 15px 35px;
-    font-family: "Courier New", monospace;
-    font-size: 1.4em;
-    font-weight: bold;
-    color: #ff0000;
-    background: repeating-linear-gradient(
-      45deg,
-      black,
-      black 5px,
-      red 5px,
-      red 10px
-    );
-    border: 3px dashed yellow;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    text-shadow: 0 0 5px #ff0000, 0 0 10px yellow;
-    animation: flicker 0.15s infinite alternate, wobble 0.3s infinite alternate;
+<script>
+paypal.Buttons({
+  createOrder: function(data, actions) {
+    return actions.order.create({
+      purchase_units: [{
+        amount: {
+          value: '5.00' // Minimum donation
+        }
+      }]
+    });
+  },
+  onApprove: function(data, actions) {
+    return actions.order.capture().then(function(details) {
+      alert('Thank you, ' + details.payer.name.given_name + '! Your Premium password is: bozmaster2025');
+      // Optionally redirect to premium page
+      window.location.href = "thankyou.html";
+    });
   }
+}).render('#paypal-button-container');
+</script>
 
-  .dodgy-button:hover {
-    background: black;
-    color: lime;
-    border: 3px solid magenta;
-    text-shadow: 0 0 5px lime, 0 0 15px magenta;
+
+<div id="premiumAccess" style="display:none; margin-top:20px;">
+  <h3>🎉 Thank you for your support!</h3>
+  <p>Your Premium Account password is: <strong>bozmaster2025</strong></p>
+  <p>Use it to unlock exclusive content.</p>
+</div>
+
+<h2>Support Bozine Spungifoum</h2>
+<p>Donate £5 or more to unlock Premium Access!</p>
+
+<form action="https://www.paypal.com/donate" method="post" target="_blank">
+  <input type="hidden" name="hosted_button_id" value="YOUR_BUTTON_ID_HERE">
+  <button type="submit">Donate with PayPal</button>
+</form>
+
+
+<script>
+function handleDonation(e) {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById("amount").value);
+  if (amount >= 5) {
+    document.getElementById("premiumAccess").style.display = "block";
+  } else {
+    alert("Minimum donation for premium access is £5.");
   }
-
-  @keyframes flicker {
-    from { opacity: 1; }
-    to { opacity: 0.6; }
-  }
-
-  @keyframes wobble {
-    from { transform: rotate(-2deg) scale(1.02); }
-    to { transform: rotate(2deg) scale(0.98); }
-  }
-</style>
-<p>&nbsp</p>
-<hr>
-  <p>Hop on board, welcome to the Boz page. Made for Bozes by O'Hares</p>
-
-
-<hr>
-<h1><b>Links</b></h1>
-<a href="https://bozinespungiforum.net/dictionary">Dictionary</a><br>
-<a href="https://bozinespungiforum.net/forum">Forum</a><br>
-<a href="https://bozinespungiforum.net/formulae">Formulae</a><br>
-<a href="https://bozinespungiforum.net/bozpeoplezone">Boz People Zone</a><br>
-<a href="https://bozinespungiforum.net/wordle">Wordle</a><br>
-<a href="https://yak.net/">yak.net</a>
-<hr>
-<p>Can you find the secret page?</p>
-<p>&nbsp</p>
-<p>&nbsp</p>
-<p>This website is still in development</p>
-<p>&nbsp</p>
-<p>By the hobbyists Jake Nel and Clarence van Marle</p>
-
-
-
-</html>
+}
+</script>
