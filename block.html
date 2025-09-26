@@ -103,7 +103,7 @@
         <li>Use a VPN before connecting to your school network. This may prevent Securly from seeing your traffic.</li>
         <li>Try accessing Tor Browser from a personal device not managed by your school.</li>
         <li>Use mobile data or a hotspot instead of school Wi-Fi to avoid filtering.</li>
-        <li>If you're on a Chromebook, enable Linux (Beta) and install Tor through the Linux terminal.</li>
+        <li>If you're on a Chromebook, </li>
         <li>Use Bridges in Tor Browser to disguise your traffic and bypass filtering.</li>
       </ul>
       <p><strong>Important:</strong> Never attempt to bypass Securly on school-owned devices without permission. Always respect your institution’s rules and use privacy tools responsibly.</p>
@@ -117,7 +117,56 @@
         <li><strong>Windows:</strong> Go to <a href="https://www.torproject.org/download/" target="_blank">torproject.org/download</a> and choose the Windows version. Run the installer and follow the setup instructions.</li>
         <li><strong>macOS:</strong> Visit the same link and select the macOS version. Drag the Tor Browser into your Applications folder.</li>
         <li><strong>Linux:</strong> Download the Linux version from the site. Extract the folder and run the <code>start-tor-browser.desktop</code> file.</li>
-        <li><strong>Chromebook:</strong> Enable Linux (Beta) in your settings, then follow the Linux instructions above.</li>
+        <li><strong>Chromebook:</strong>
+🧭 Step-by-Step: Install Tor Browser on Chromebook
+✅ Step 1: Check if your Chromebook supports Linux
+- Click the clock in the bottom-right corner of your screen.
+- Click the gear icon ⚙️ to open Settings.
+- In the left sidebar, click "Advanced" → then click "Developers".
+- Look for "Linux development environment (Beta)".
+- If you see it, your Chromebook supports Linux.
+- If not, your device may not support this method.
+
+🧱 Step 2: Turn on Linux
+- In the "Linux development environment (Beta)" section, click "Turn On".
+- A setup window will appear. Click "Next".
+- Choose a username (any name is fine).
+- Set Disk size (default is okay unless you want more space).
+- Click "Install".
+- Wait a few minutes while Linux installs. A Terminal window will open automatically when done.
+
+🌐 Step 3: Download Tor Browser
+- In the Terminal window, type this command exactly:
+sudo apt update && sudo apt install wget
+- Press Enter. This updates your system and installs the download tool.
+- Now download the Tor Browser:
+wget https://www.torproject.org/dist/torbrowser/12.5.6/tor-browser-linux64-12.5.6_ALL.tar.xz
+- Press Enter. This downloads the latest Tor Browser package.
+
+📦 Step 4: Extract and Install Tor Browser
+- Extract the downloaded file:
+tar -xvf tor-browser-linux64-12.5.6_ALL.tar.xz
+- Press Enter. This unpacks the browser files.
+- Navigate to the Tor Browser folder:
+cd tor-browser
+- Press Enter.
+- Launch the installer:
+./start-tor-browser.desktop
+- Press Enter. The Tor Browser will start and guide you through setup.
+
+🚀 Step 5: Use Tor Browser
+- Once installed, you can launch Tor Browser anytime by opening the Terminal and typing:
+cd tor-browser
+./start-tor-browser.desktop
+- You can also create a shortcut:
+- Right-click the Tor Browser icon in your app shelf.
+- Select "Pin" to keep it handy.
+
+🛡️ Tips for Safe Browsing
+- Always download Tor Browser from the official site: https://www.torproject.org
+- Keep your Linux environment and Tor Browser updated.
+- Avoid installing extra browser extensions—they can compromise privacy.
+</li>
         <li><strong>iOS:</strong> Tor Browser is not officially available on iOS. Use the Onion Browser from the App Store, developed by the Tor Project.</li>
       </ul>
     </div>
