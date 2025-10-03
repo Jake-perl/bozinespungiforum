@@ -1,8 +1,6 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Addictive Mini Games — Fixed Tetris</title>
   <style>
     :root{
@@ -40,7 +38,7 @@
         <h1>Addictive Mini Games</h1>
         <p class="lead">Six micro-games — Tetris fixed, per-card Fullscreen buttons.</p>
       </div>
-      <div class="score" id="globalScore">Global best: 0</div>
+      <div class="score" id="globalScore">Global best: 422</div>
     </header>
 
     <div class="grid">
@@ -52,7 +50,7 @@
           <button id="reactionStart">Start</button>
           <button id="reactionReset" class="btn-ghost small">Reset best</button>
           <button class="fs-btn" data-fs="reactionCard">Fullscreen</button>
-          <div class="score" id="reactionBest">Best: —</div>
+          <div class="score" id="reactionBest">Best: 31ms</div>
         </div>
       </div>
 
@@ -104,7 +102,7 @@
         <h2>Number Tap</h2>
         <div class="status" id="numberMsg">Tap the target number as it changes</div>
         <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <div style="font-weight:800;font-size:20px" id="numberTarget">1</div>
+          <div style="font-weight:800;font-size:20px" id="numberTarget">8</div>
           <button id="numberTap" class="btn">Tap</button>
           <button id="numberShuffle" class="btn-ghost small">Shuffle target</button>
           <button class="fs-btn" data-fs="numberCard">Fullscreen</button>
@@ -114,11 +112,9 @@
 
       <!-- Tetris -->
       <div class="card" id="tetrisCard">
-        <h2>Tetris (mini, fixed)</h2>
-        <div class="status">Arrow keys to move, Up rotate, Space drop</div>
-        <div class="center" style="margin-top:8px">
-          <canvas id="tetrisCanvas" class="tetris-canvas" width="200" height="320"></canvas>
-        </div>
+        
+        <a href="https://bozinespungiforum.net/tetris">Tetris</a>
+        
         <div class="controls" style="margin-top:10px">
           <button id="tetrisStart">Start</button>
           <button id="tetrisReset" class="btn-ghost small">Reset</button>
@@ -128,7 +124,7 @@
       </div>
     </div>
 
-    <footer>Six addictive loops with instant feedback and fullscreen immersion.</footer>
+    <footer>BZSF.</footer>
   </div>
 
   <script>
@@ -484,5 +480,6 @@
 
     updateGlobalBest();
   </script>
-</body>
-</html>
+
+
+</body></html>
