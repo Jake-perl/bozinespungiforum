@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Addictive Mini Games - Fixed Reaction Timer</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --card:#0f1720; --muted:#98a3b3; --accent:#22c1c3;
+      --accent2:#7b61ff; --glass: rgba(255,255,255,0.03);
+      --card-radius:12px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071021 0%, #081822 100%);color:#e6eef6}
+    .wrap{max-width:1100px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{font-size:20px;margin:0;font-weight:600;letter-spacing:0.2px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:18px}
+    .card{background:linear-gradient(180deg,var(--card), #0a1118);border-radius:var(--card-radius);padding:14px;box-shadow:0 6px 20px rgba(2,6,12,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .card h2{margin:0 0 8px 0;font-size:16px}
+    .status{color:var(--muted);font-size:13px;margin-bottom:8px}
+    .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    button, .btn{
+      background:linear-gradient(180deg,var(--accent),#16a7a8);
+      color:#04121a;border:0;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;
+      box-shadow:0 6px 14px rgba(34,193,195,0.12);
+    }
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .small{padding:6px 8px;font-size:13px;border-radius:7px}
+    canvas{width:100%;height:140px;background:linear-gradient(180deg,#08131a,#051014);border-radius:8px;display:block}
+    .score{margin-left:auto;color:var(--accent2);font-weight:700}
+    .center{display:flex;align-items:center;justify-content:center}
+    .grid-bottom{display:flex;gap:12px;margin-top:12px}
+    .numgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .numbtn{background:var(--glass);border-radius:8px;padding:14px;font-weight:700;color:#dfe8f2;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+    footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+    /* Reaction-specific styles */
+    .reaction-area{display:flex;flex-direction:column;gap:8px}
+    .reaction-msg{padding:12px;border-radius:8px;background:rgba(255,255,255,0.02);transition:background 180ms,color 180ms}
+    .reaction-ready{background:linear-gradient(180deg,#d9ffea,#baffd9);color:#042a17}
+    .reaction-wait{background:linear-gradient(180deg,#fff9d9,#fff0b8);color:#2a2500}
+    .reaction-start-green{
+      background:linear-gradient(180deg,#bfffbf,#88ff88) !important;
+      color:#023300 !important;
+      box-shadow:0 8px 20px rgba(34,193,34,0.12) !important;
+    }
+    @media (max-width:420px){canvas{height:120px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Addictive Mini Games</h1>
+        <p class="lead">Five short, score-driven micro-games. Reaction Timer fixed to show green state.</p>
+      </div>
+      <div class="score" id="globalScore">Global best: 0</div>
+    </header>
+
+    <div class="grid">
+      <!-- Game 1: Reaction Timer (fixed) -->
+      <div class="card" id="reactionCard">
+        <h2>Reaction Timer</h2>
+        <div class="reaction-area">
+          <div id="reactionMsg" class="reaction-msg">Press Start, wait for green, click fast</div>
+          <div class="controls">
+            <button id="reactionStart">Start</button>
+            <button id="reactionReset" class="btn-ghost small">Reset best</button>
+            <div class="score" id="reactionBest">Best: —</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remaining games (unchanged) -->
+      <div class="card" id="clickCard">
+        <h2>Click Frenzy</h2>
+        <div class="status">Click the big button, combos increase multiplier</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <button id="clickBig" style="font-size:18px;padding:14px;border-radius:12px">Tap!</button>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div>Score: <span id="clickScore">0</span></div>
+            <div>Multiplier: <span id="clickMult">1x</span></div>
+            <button id="clickReset" class="btn-ghost small">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="memoryCard">
+        <h2>Memory Flash</h2>
+        <div class="status" id="memoryMsg">Repeat the growing sequence</div>
+        <div class="grid-bottom">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="memStart" class="small">Start</button>
+            <button id="memStrict" class="btn-ghost small">Strict: off</button>
+          </div>
+          <div class="score" id="memRound">Round: 0</div>
+        </div>
+        <div style="margin-top:12px" class="center">
+          <canvas id="memCanvas" width="300" height="140"></canvas>
+        </div>
+      </div>
+
+      <div class="card" id="dodgeCard">
+        <h2>Dodge the Dot</h2>
+        <div class="status">Move your mouse/finger to avoid red dots</div>
+        <div style="margin-top:8px" class="center">
+          <canvas id="dodgeCanvas" width="300" height="140"></canvas>
+        </div>
+        <div class="controls" style="margin-top:10px">
+          <button id="dodgeStart">Play</button>
+          <button id="dodgeReset" class="btn-ghost small">Reset best</button>
+          <div class="score" id="dodgeBest">Best: —</div>
+        </div>
+      </div>
+
+      <div class="card" id="numberCard">
+        <h2>Number Tap</h2>
+        <div class="status" id="numberMsg">Tap the target number as it changes</div>
+        <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div style="font-weight:800;font-size:20px" id="numberTarget">1</div>
+          <button id="numberTap" class="btn">Tap</button>
+          <button id="numberShuffle" class="btn-ghost small">Shuffle target</button>
+          <div class="score" id="numberScore">Score: 0</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>Fast rounds, instant feedback, visible progress — compelling micro-game loops</footer>
+  </div>
+
+  <script>
+    const store = {
+      get(k){ try{return JSON.parse(sessionStorage.getItem(k))}catch(e){return null} },
+      set(k,v){ sessionStorage.setItem(k, JSON.stringify(v)) }
+    };
+    function updateGlobalBest() {
+      const bests = ['reactionBestVal','clickBest','memBest','dodgeBestVal','numberBest'];
+      let max = 0;
+      bests.forEach(k => { const v = store.get(k)||0; if (v > max) max = v });
+      document.getElementById('globalScore').textContent = 'Global best: ' + max;
+    }
+
+    /* ---------------- Reaction Timer (fixed green state) ---------------- */
+    (function(){
+      const startBtn = document.getElementById('reactionStart');
+      const resetBtn = document.getElementById('reactionReset');
+      const msg = document.getElementById('reactionMsg');
+      const bestLabel = document.getElementById('reactionBest');
+      let timeout = null, startTime = 0, best = store.get('reactionBestVal') || null;
+      if(best) bestLabel.textContent = 'Best: ' + best.toFixed(0) + 'ms';
+
+      function setToWait() {
+        msg.classList.remove('reaction-ready','reaction-start-green');
+        msg.classList.add('reaction-wait');
+        msg.textContent = 'Wait for green...';
+        startBtn.classList.remove('reaction-start-green');
+      }
+      function setToReady() {
+        msg.classList.remove('reaction-wait');
+        msg.classList.add('reaction-ready','reaction-start-green');
+        msg.textContent = 'CLICK NOW!';
+        startBtn.classList.add('reaction-start-green');
+      }
+      function resetVisuals() {
+        msg.classList.remove('reaction-wait','reaction-ready','reaction-start-green');
+        startBtn.classList.remove('reaction-start-green');
+      }
+
+      startBtn.addEventListener('click', ()=>{
+        // disable while waiting
+        startBtn.disabled = true;
+        resetVisuals();
+        setToWait();
+        const wait = 800 + Math.random()*2200;
+        clearTimeout(timeout);
+        timeout = setTimeout(()=>{
+          // turn green and record start time
+          setToReady();
+          startTime = performance.now();
+          // add a single-capture listener to record the reaction
+          function recordReaction(e) {
+            e.stopPropagation();
+            const reaction = performance.now() - startTime;
+            msg.classList.remove('reaction-ready','reaction-start-green');
+            msg.textContent = 'Reaction: ' + reaction.toFixed(0) + 'ms';
+            startBtn.disabled = false;
+            startBtn.classList.remove('reaction-start-green');
+            if(!best || reaction < best){
+              best = reaction;
+              store.set('reactionBestVal', best);
+              bestLabel.textContent = 'Best: ' + best.toFixed(0) + 'ms';
+              updateGlobalBest();
+            }
+            document.removeEventListener('click', recordReaction, true);
+          }
+          // use capture to ensure clicks are noticed even on other elements
+          document.addEventListener('click', recordReaction, true);
+        }, wait);
+      });
+
+      resetBtn.addEventListener('click', ()=>{
+        best = null;
+        store.set('reactionBestVal', null);
+        bestLabel.textContent = 'Best: —';
+        updateGlobalBest();
+      });
+
+      window.addEventListener('beforeunload', ()=>clearTimeout(timeout));
+    })();
+
+    /* ---------------- Click Frenzy ---------------- */
+    (function(){
+      const btn = document.getElementById('clickBig');
+      const scoreLabel = document.getElementById('clickScore');
+      const multLabel = document.getElementById('clickMult');
+      const resetBtn = document.getElementById('clickReset');
+      let score = 0, mult = 1, combo = 0, lastTime = 0, best = store.get('clickBest') || 0;
+      function tap(){
+        const now = performance.now();
+        const dt = now - lastTime;
+        if(dt < 900){ combo++; }
+        else combo = 1;
+        lastTime = now;
+        mult = 1 + Math.min(8, Math.floor(combo/5));
+        const gain = Math.floor(1 * mult);
+        score += gain;
+        scoreLabel.textContent = score;
+        multLabel.textContent = mult + 'x';
+        if(score > best){ best = score; store.set('clickBest', best); updateGlobalBest(); }
+      }
+      btn.addEventListener('mousedown', ()=>{ tap(); });
+      btn.addEventListener('touchstart', (e)=>{ e.preventDefault(); tap(); }, {passive:false});
+      resetBtn.addEventListener('click', ()=>{ score=0;combo=0;mult=1;scoreLabel.textContent=0;multLabel.textContent='1x'; store.set('clickBest', 0); updateGlobalBest() });
+    })();
+
+    /* ---------------- Memory Flash (Simon) ---------------- */
+    (function(){
+      const canvas = document.getElementById('memCanvas');
+      const ctx = canvas.getContext('2d');
+      const startBtn = document.getElementById('memStart');
+      const strictBtn = document.getElementById('memStrict');
+      const roundLabel = document.getElementById('memRound');
+      const msg = document.getElementById('memoryMsg');
+      let seq = [], player = [], strict = false, round = 0, playing = false;
+      const pads = [
+        {color:'#ff4d4f',x:10,y:10,w:140,h:60},
+        {color:'#ffb84d',x:150,y:10,w:140,h:60},
+        {color:'#4dd09f',x:10,y:70,w:140,h:60},
+        {color:'#4d8bff',x:150,y:70,w:140,h:60}
+      ];
+      function drawPads(active=-1){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        pads.forEach((p,i)=>{
+          ctx.fillStyle = i===active ? lighten(p.color,0.3) : p.color;
+          roundRect(ctx,p.x,p.y,p.w,p.h,10);
+          ctx.fill();
+        });
+      }
+      function roundRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+      function lighten(hex,amt){
+        const c = hex.replace('#',''); const num = parseInt(c,16);
+        let r = (num>>16)+Math.floor(255*amt), g = ((num>>8)&0x00FF)+Math.floor(255*amt), b = (num&0x0000FF)+Math.floor(255*amt);
+        r=Math.min(255,r);g=Math.min(255,g);b=Math.min(255,b);
+        return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+      }
+      function playSeq(){
+        playing = true; player=[]; roundLabel.textContent = 'Round: ' + round;
+        let i=0;
+        const iv = setInterval(()=>{
+          if(i>=seq.length){ clearInterval(iv); playing=false; msg.textContent='Your turn'; return; }
+          drawPads(seq[i]);
+          setTimeout(()=>drawPads(-1), 420);
+          i++;
+        },700);
+      }
+      function nextRound(){
+        seq.push(Math.floor(Math.random()*4));
+        round = seq.length;
+        msg.textContent = 'Watch the sequence';
+        setTimeout(playSeq,300);
+      }
+      canvas.addEventListener('click', (e)=>{
+        if(playing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left, y = e.clientY - rect.top;
+        const hit = pads.findIndex(p=> x>=p.x && x<=p.x+p.w && y>=p.y && y<=p.y+p.h);
+        if(hit<0) return;
+        player.push(hit);
+        flashPad(hit);
+        const idx = player.length-1;
+        if(player[idx] !== seq[idx]){
+          msg.textContent = 'Wrong!';
+          if(strict){ seq=[]; round=0; roundLabel.textContent='Round: 0'; setTimeout(()=>nextRound(),800); }
+          else { player=[]; setTimeout(()=>{ msg.textContent='Watch again'; playSeq(); },800); }
+        } else {
+          if(player.length === seq.length){
+            msg.textContent = 'Good!';
+            setTimeout(()=>nextRound(),600);
+          } else {
+            msg.textContent = 'Keep going';
+          }
+        }
+      });
+      function flashPad(i){ drawPads(i); setTimeout(()=>drawPads(-1),200) }
+      startBtn.addEventListener('click', ()=>{ seq=[]; nextRound(); });
+      strictBtn.addEventListener('click', ()=>{ strict = !strict; strictBtn.textContent = 'Strict: ' + (strict? 'on':'off'); });
+      drawPads(-1);
+    })();
+
+    /* ---------------- Dodge the Dot ---------------- */
+    (function(){
+      const canvas = document.getElementById('dodgeCanvas');
+      const ctx = canvas.getContext('2d');
+      const startBtn = document.getElementById('dodgeStart');
+      const resetBtn = document.getElementById('dodgeReset');
+      const bestLabel = document.getElementById('dodgeBest');
+      let best = store.get('dodgeBestVal') || 0;
+      if(best) bestLabel.textContent = 'Best: ' + Math.floor(best) + 's';
+      let w = canvas.width, h = canvas.height;
+      let mouse = {x:w/2,y:h/2}, running=false, startTime=0, enemies=[], spawnTimer=0, score=0, raf=0;
+      canvas.addEventListener('mousemove', e=>{ const r=canvas.getBoundingClientRect(); mouse.x = (e.clientX-r.left) * (canvas.width/r.width); mouse.y = (e.clientY-r.top) * (canvas.height/r.height); });
+      canvas.addEventListener('touchmove', e=>{ e.preventDefault(); const t=e.touches[0]; const r=canvas.getBoundingClientRect(); mouse.x = (t.clientX-r.left) * (canvas.width/r.width); mouse.y = (t.clientY-r.top) * (canvas.height/r.height); }, {passive:false});
+      function spawn() { enemies.push({x:Math.random()*w,y:-10,r:8+Math.random()*8, vx:(Math.random()-0.5)*1.6, vy:1+Math.random()*1.6}); }
+      function step(){
+        if(!running) return;
+        const now = performance.now();
+        score = (now - startTime)/1000;
+        spawnTimer += 1/60;
+        if(spawnTimer > Math.max(0.4,1.6 - score/15)){ spawn(); spawnTimer=0; }
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle = '#aef2d2';
+        ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 9, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ff5c5c';
+        for(let i=enemies.length-1;i>=0;i--){
+          const e = enemies[i];
+          e.x += e.vx; e.y += e.vy + Math.min(4, score/20);
+          ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,Math.PI*2); ctx.fill();
+          const dx = e.x - mouse.x, dy = e.y - mouse.y;
+          if(Math.hypot(dx,dy) < e.r+9){ endRun(); return; }
+          if(e.y > h+20) enemies.splice(i,1);
+        }
+        ctx.fillStyle = '#98a3b3'; ctx.font = '12px system-ui';
+        ctx.fillText('Time: ' + score.toFixed(2) + 's', 8, 14);
+        requestAnimationFrame(step);
+      }
+      function start(){
+        enemies=[]; spawnTimer=0; running=true; startTime=performance.now(); requestAnimationFrame(step);
+      }
+      function endRun(){
+        running=false;
+        const time = (performance.now()-startTime)/1000;
+        if(!best || time > best){ best = time; store.set('dodgeBestVal', best); bestLabel.textContent = 'Best: ' + Math.floor(best) + 's'; updateGlobalBest(); }
+        ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0,0,w,h);
+        ctx.fillStyle = '#fff'; ctx.font='18px system-ui'; ctx.fillText('You lasted ' + time.toFixed(2) + 's', 20, h/2);
+      }
+      startBtn.addEventListener('click', ()=>{ start(); });
+      resetBtn.addEventListener('click', ()=>{ best=0; store.set('dodgeBestVal', 0); bestLabel.textContent='Best: —'; updateGlobalBest() });
+    })();
+
+    /* ---------------- Number Tap ---------------- */
+    (function(){
+      const targetEl = document.getElementById('numberTarget');
+      const btn = document.getElementById('numberTap');
+      const shuffle = document.getElementById('numberShuffle');
+      const scoreLabel = document.getElementById('numberScore');
+      let target = 1, score = 0, best = store.get('numberBest')||0;
+      function newTarget(){ target = 1 + Math.floor(Math.random()*9); targetEl.textContent = target; }
+      btn.addEventListener('click', ()=>{
+        const n = Math.floor(Math.random()*9)+1;
+        if(n === target){ score += Math.max(1, Math.floor(5 + Math.random()*10)); }
+        else { score = Math.max(0, score - 3); }
+        scoreLabel.textContent = 'Score: ' + score;
+        if(score > best){ best = score; store.set('numberBest', best); updateGlobalBest(); }
+        newTarget();
+      });
+      shuffle.addEventListener('click', ()=>newTarget());
+      newTarget();
+    })();
+
+    updateGlobalBest();
+  </script>
+</body>
+</html>
