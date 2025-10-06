@@ -1,0 +1,379 @@
+AI Scroll DnD Campaign Maker (HTML)
+Below is a single-file HTML "AI scroll" styled campaign maker. Paste into a file (campaign.html) and open in a browser. Enter your campaign description and the script will generate a rich list of possible locations, short descriptions, connections, hooks, and a simple node-style map you can edit and export as JSON or PNG.
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI Scroll DnD Campaign Maker</title>
+<style>
+  :root{
+    --bg:#efe0c1; --ink:#2b1f16; --accent:#8a5a2b;
+    --panel-bg: rgba(43,31,22,0.06);
+    font-family: "Cormorant Garamond", "Times New Roman", serif;
+  }
+  html,body{height:100%; margin:0; background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(138,90,43,0.06), transparent 10%),
+    linear-gradient(180deg,#f8f1e3 0%, #efe0c1 100%); color:var(--ink);}
+  .wrap{max-width:1100px;margin:28px auto;padding:28px;background:
+    linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15));
+    border-radius:12px; box-shadow:0 10px 40px rgba(17,12,8,0.25); border:1px solid rgba(43,31,22,0.06);}
+  header{display:flex;gap:16px;align-items:center;}
+  .scroll{
+    background: linear-gradient(180deg,#fff7e8,#f1e3cc);
+    border-radius:8px; padding:18px; flex:1; box-shadow:inset 0 0 0 1px rgba(0,0,0,0.02);
+    border:1px solid rgba(138,90,43,0.08);
+  }
+  h1{margin:0; font-size:28px; color:var(--accent);}
+  p.lead{margin:6px 0 0; font-size:14px; color:#5b4638;}
+  .controls{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  textarea{width:100%;min-height:110px;padding:12px;border-radius:8px;border:1px solid rgba(43,31,22,0.08);
+    background:rgba(255,255,255,0.6); color:var(--ink); font-family:inherit; font-size:14px; resize:vertical;}
+  button{background:var(--accent); color:white; border:none; padding:10px 14px;border-radius:8px; cursor:pointer; font-weight:600;}
+  button.secondary{background:#5b4a42;}
+  .row{display:flex;gap:18px;margin-top:18px;}
+  .col{flex:1;}
+  .panel{background:var(--panel-bg); padding:12px;border-radius:10px; min-height:120px; overflow:auto;}
+  .locations{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+  .loc{background:white;border-radius:8px;padding:10px;border:1px solid rgba(43,31,22,0.06);}
+  .loc h4{margin:0 0 6px;color:var(--accent);}
+  .tags{font-size:12px;color:#5b4638;margin-bottom:8px;}
+  .mapcanvas{background:linear-gradient(180deg,#efe5ce,#e3d6ba); border-radius:8px; padding:10px; position:relative;}
+  svg{width:100%; height:420px; display:block; border-radius:6px; background:transparent;}
+  .footer{display:flex;justify-content:space-between;align-items:center;margin-top:18px;color:#5b4638;font-size:13px;}
+  .small{font-size:12px;color:#6b5a4f;}
+  .node{fill:#fff3e6; stroke:#8a5a2b; stroke-width:1.5; cursor:pointer;}
+  .edge{stroke:#6b5847; stroke-width:2; opacity:0.9;}
+  .selected{stroke:#2b6a4a; stroke-width:2.4;}
+  .exportbtn{background:#2b6a4a;}
+  .search{padding:8px;border-radius:8px;border:1px solid rgba(43,31,22,0.06);width:100%;}
+  @media (max-width:800px){ .row{flex-direction:column;} svg{height:340px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="scroll">
+      <h1>AI Scroll Campaign Maker</h1>
+      <p class="lead">Describe the campaign world, theme, starting region, and main threats. The scroll will conjure likely places, hooks, and a draft map.</p>
+      <div class="controls">
+        <textarea id="prompt" placeholder="Example: A fog-bound coastal kingdom, corsairs and ancient sea-gods, a ruined lighthouse emitting blue lights at night..."></textarea>
+        <div style="display:flex;gap:8px;">
+          <button id="generate">Generate Scroll</button>
+          <button class="secondary" id="tweak">Tweak Tone</button>
+          <button id="clear">Clear</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="row">
+    <div class="col">
+      <div class="panel">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+          <input id="search" class="search" placeholder="Search locations or tags..." />
+          <button id="shuffle" title="Regenerate variants">Shuffle</button>
+        </div>
+
+        <div id="summary" style="margin-bottom:12px" class="small"></div>
+
+        <div id="locations" class="locations" aria-live="polite"></div>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button id="exportJson" class="exportbtn">Export JSON</button>
+        <button id="exportPNG" class="secondary" title="Download map as PNG">Export Map PNG</button>
+        <button id="copyText">Copy Locations Text</button>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="panel mapcanvas">
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button id="autolayout">Auto Layout</button>
+          <button id="connect" class="secondary">Connect Nearby</button>
+          <button id="clearMap">Clear Map</button>
+        </div>
+
+        <svg id="mapSvg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b5847"></path>
+            </marker>
+          </defs>
+          <g id="edges"></g>
+          <g id="nodes"></g>
+        </svg>
+
+        <p class="small" style="margin-top:8px;">Click a generated location to add it to the map. Drag nodes to reposition. Use Auto Layout for a fast arrangement.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="small">Style: AI Scroll parchment · Output: Location nodes, hooks, tags</div>
+    <div class="small">Tip: Edit names and descriptions inline, then export JSON for your campaign notes</div>
+  </div>
+</div>
+
+<script>
+/* Lightweight "AI" generator: creates locations, tags, hooks and connections from user prompt.
+   This is deterministic but varied. No external APIs required. */
+
+function hashString(s){ let h=2166136261; for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h+= (h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24);} return (h>>>0); }
+function pick(arr,seed){return arr[seed % arr.length];}
+function shuffleArray(a,seed){let s=seed; for(let i=a.length-1;i>0;i--){s=(s*1664525+1013904223)>>>0; let j=s % (i+1); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+const PLACE_TYPES = ["Fishing Village","Harbor","Lighthouse Ruins","Bog","Ancient Temple","Hillfort","Forest Glade","Bandit Camp","Market Town","Noble Estate","Cavern","Watchtower","Salt Flats","Mage's Tower","Shipwreck Cove","Smuggler's Den"];
+const TAGS = ["social","combat","mystery","exploration","politics","dungeon","puzzle","naval","undead","arcane","wildlife","trade","ritual","fey","curse","heist"];
+const HOOKS = [
+  "A missing ledger points to a secret passage beneath the location.",
+  "Local children have been vanishing at dusk; whispers of shadowed shapes.",
+  "An old map promises a vault deep below but is keyed to a family crest.",
+  "A revenant demands justice before it can rest.",
+  "Strange lights appear at sea; the fishermen refuse to leave the docks.",
+  "A feud between two houses threatens to erupt into violence.",
+  "A merchant offers coin for an item stolen by smugglers.",
+  "The local shrine pulses with corrupt magic after a storm.",
+  "An eccentric mage requests rare ingredients from nearby ruins.",
+  "A gambler owes a cruel creditor who now hires monstrous muscle."
+];
+
+function generateLocations(prompt, count=12){
+  const seed = hashString(prompt.toLowerCase().trim() || "default-scroll");
+  let s=seed;
+  const words = prompt.split(/\s+/).slice(0,6).join(" ");
+  const baseMood = pick(["stormy","foggy","sunlit","gloomy","mystic"], s); s=(s*1103515245+12345)>>>0;
+  const locs=[];
+  let namesSeed = s;
+  for(let i=0;i<count;i++){
+    namesSeed = (namesSeed*1664525+1013904223)>>>0;
+    const type = pick(PLACE_TYPES, namesSeed);
+    const adjective = pick(["Old","Shattered","Salt","Hidden","Quiet","Crumbling","Silver","Black","Mossy","Windward","Bleached","Gilded"], namesSeed>>>4);
+    const noun = pick(["Haven","Harbor","Hold","Crossing","Fen","Thicket","Keep","Barrow","Ledge","Fjord","Grove","Spire","Point","Cove"], namesSeed>>>7);
+    const name = `${adjective} ${type.split(" ")[0]} ${noun}`;
+    const tagCount = 1 + ((namesSeed >>> 3) % 3);
+    const tags = shuffleArray(TAGS.slice(), namesSeed).slice(0, tagCount);
+    const hook = pick(HOOKS, namesSeed>>>2);
+    const danger = ["low","moderate","high","deadly"][(namesSeed>>>5) % 4];
+    const distance = 1 + ((namesSeed>>>9) % 12);
+    const description = `${type} near ${words || "the region"}; mood ${baseMood}. ${pick(["Locals avoid the site at night.","A local elder will barter maps.","Treasure hunters visit despite warnings.","The site radiates faint arcane energy."], namesSeed>>>11)}`;
+    locs.push({
+      id: `loc-${i+1}`,
+      name, type, tags, hook, danger, distance, description,
+      x: 100 + ((namesSeed>>>12) % 800),
+      y: 60 + ((namesSeed>>>20) % 460)
+    });
+    s = (s*214013+2531011)>>>0;
+  }
+  // create suggested links by proximity
+  for(let a=0;a<locs.length;a++){
+    locs[a].links = [];
+    for(let b=0;b<locs.length;b++){
+      if(a===b) continue;
+      const dx = locs[a].x - locs[b].x;
+      const dy = locs[a].y - locs[b].y;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      if(dist < 200) locs[a].links.push({to:locs[b].id, type: pick(["road","trail","hidden path","river","sea lane"], hashString(locs[a].id+locs[b].id))});
+    }
+  }
+  return {summary:`Theme: ${baseMood}; seed ${seed}`, locations: locs, generatedAt:new Date().toISOString()};
+}
+
+/* UI glue */
+const promptEl = document.getElementById('prompt');
+const genBtn = document.getElementById('generate');
+const locationsEl = document.getElementById('locations');
+const summaryEl = document.getElementById('summary');
+const mapSvg = document.getElementById('mapSvg');
+const nodesG = document.getElementById('nodes');
+const edgesG = document.getElementById('edges');
+const searchEl = document.getElementById('search');
+let currentData = null;
+let selectedNode = null;
+
+function renderLocations(data){
+  locationsEl.innerHTML = '';
+  data.locations.forEach(loc=>{
+    const div = document.createElement('div'); div.className='loc'; div.id=loc.id;
+    const h = document.createElement('h4'); h.textContent = loc.name; div.appendChild(h);
+    const tags = document.createElement('div'); tags.className='tags'; tags.textContent = loc.type + ' · ' + loc.tags.join(', '); div.appendChild(tags);
+    const p = document.createElement('div'); p.textContent = loc.description; div.appendChild(p);
+    const hook = document.createElement('div'); hook.style.marginTop='8px'; hook.innerHTML = `<strong>Hook:</strong> ${loc.hook}`; div.appendChild(hook);
+    const meta = document.createElement('div'); meta.className='small'; meta.style.marginTop='6px'; meta.textContent = `Danger: ${loc.danger} · Distance: ${loc.distance}`; div.appendChild(meta);
+
+    div.addEventListener('click',()=>{ addNodeToMap(loc); });
+    locationsEl.appendChild(div);
+  });
+  summaryEl.textContent = data.summary;
+}
+
+function clearMap(){ nodesG.innerHTML=''; edgesG.innerHTML=''; selectedNode=null; }
+
+function createSvgNode(loc){
+  const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+  g.setAttribute("transform",`translate(${loc.x},${loc.y})`);
+  g.dataset.id = loc.id;
+  const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
+  circle.setAttribute("r",34); circle.classList.add('node');
+  const text = document.createElementNS("http://www.w3.org/2000/svg","text");
+  text.setAttribute("y",6); text.setAttribute("text-anchor","middle"); text.setAttribute("style","font-family:serif;font-size:12px;fill:#3a2a1f;");
+  text.textContent = loc.name.split(' ').slice(0,3).join(' ');
+  g.appendChild(circle); g.appendChild(text);
+
+  // dragging
+  let dragging=false, ox=0, oy=0;
+  g.addEventListener('mousedown', (ev)=>{ dragging=true; ox=ev.clientX; oy=ev.clientY; ev.preventDefault(); });
+  window.addEventListener('mousemove', (ev)=>{ if(!dragging) return; const dx=ev.clientX-ox, dy=ev.clientY-oy; ox=ev.clientX; oy=ev.clientY;
+    const ctm = mapSvg.getScreenCTM(); const pt = mapSvg.createSVGPoint(); pt.x=0; pt.y=0;
+    // approximate transform movement by modifying local coords
+    loc.x += dx * (1000 / mapSvg.clientWidth); loc.y += dy * (600 / mapSvg.clientHeight);
+    g.setAttribute('transform',`translate(${loc.x},${loc.y})`);
+    drawEdges();
+  });
+  window.addEventListener('mouseup', ()=>{ dragging=false; });
+
+  g.addEventListener('click', (ev)=>{ ev.stopPropagation(); selectNode(g); });
+
+  return g;
+}
+
+function addNodeToMap(loc){
+  // avoid duplicates
+  if(document.querySelector(`#nodes g[data-id="${loc.id}"]`)) return;
+  const g = createSvgNode(loc);
+  nodesG.appendChild(g);
+  drawEdges();
+}
+
+function drawEdges(){
+  edgesG.innerHTML='';
+  const nodeElems = Array.from(nodesG.querySelectorAll('g'));
+  const nodes = nodeElems.map(el=>{
+    const id = el.dataset.id;
+    const transform = el.getAttribute('transform');
+    const m = transform.match(/translate\(([^,]+),([^)]+)\)/);
+    return {id, x: parseFloat(m[1]), y: parseFloat(m[2])};
+  });
+  // draw suggested links if both nodes present in data
+  if(!currentData) return;
+  currentData.locations.forEach(loc=>{
+    loc.links.forEach(l=>{
+      const a = nodes.find(n=>n.id===loc.id);
+      const b = nodes.find(n=>n.id===l.to);
+      if(a && b){
+        const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+        line.setAttribute("x1",a.x); line.setAttribute("y1",a.y);
+        line.setAttribute("x2",b.x); line.setAttribute("y2",b.y);
+        line.classList.add('edge'); line.setAttribute('marker-end','url(#arrow)');
+        edgesG.appendChild(line);
+      }
+    });
+  });
+}
+
+function selectNode(g){
+  if(selectedNode) selectedNode.querySelector('circle').classList.remove('selected');
+  selectedNode = g;
+  g.querySelector('circle').classList.add('selected');
+}
+
+genBtn.addEventListener('click', ()=>{
+  const text = promptEl.value.trim();
+  if(!text){ promptEl.value='A mysterious coastal realm with fog, ancient lighthouses, corsairs and sea-worshippers.'; }
+  currentData = generateLocations(promptEl.value || promptEl.placeholder, 12);
+  renderLocations(currentData);
+  clearMap();
+});
+
+document.getElementById('clear').addEventListener('click', ()=>{
+  promptEl.value=''; locationsEl.innerHTML=''; summaryEl.textContent=''; clearMap(); currentData=null;
+});
+
+document.getElementById('shuffle').addEventListener('click', ()=>{
+  if(!currentData) return;
+  currentData = generateLocations(promptEl.value || promptEl.placeholder, 12 + Math.max(0, (Math.random()*4|0)));
+  renderLocations(currentData); clearMap();
+});
+
+document.getElementById('autolayout').addEventListener('click', ()=>{
+  // simple circular layout for nodes present
+  const nodeElems = Array.from(nodesG.querySelectorAll('g'));
+  const centerX = 500, centerY=300;
+  const n = nodeElems.length || 1;
+  nodeElems.forEach((el,i)=>{
+    const loc = currentData.locations.find(l=>l.id===el.dataset.id);
+    const angle = (i / n) * Math.PI * 2;
+    loc.x = centerX + Math.cos(angle) * (180 + 80 * Math.sin(i));
+    loc.y = centerY + Math.sin(angle) * (180 + 80 * Math.cos(i));
+    el.setAttribute('transform',`translate(${loc.x},${loc.y})`);
+  });
+  drawEdges();
+});
+
+document.getElementById('connect').addEventListener('click', drawEdges);
+
+document.getElementById('clearMap').addEventListener('click', clearMap);
+
+document.getElementById('exportJson').addEventListener('click', ()=>{
+  if(!currentData) return alert('No campaign generated.');
+  // combine positions of nodes present on map
+  const placed = Array.from(nodesG.querySelectorAll('g')).map(g=>{
+    const loc = currentData.locations.find(l=>l.id===g.dataset.id);
+    return loc ? {...loc} : null;
+  }).filter(Boolean);
+  const out = {meta:currentData.summary, placed, allLocations: currentData.locations};
+  const blob = new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='campaign-locations.json'; a.click(); URL.revokeObjectURL(url);
+});
+
+document.getElementById('exportPNG').addEventListener('click', ()=>{
+  const svg = mapSvg.cloneNode(true);
+  // inline styles to preserve appearance
+  const serializer = new XMLSerializer();
+  const s = serializer.serializeToString(svg);
+  const img = new Image();
+  const svgBlob = new Blob([s], {type:"image/svg+xml;charset=utf-8"});
+  const url = URL.createObjectURL(svgBlob);
+  img.onload = function(){
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200; canvas.height = 720;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#efe5ce'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    URL.revokeObjectURL(url);
+    const png = canvas.toDataURL('image/png');
+    const a = document.createElement('a'); a.href=png; a.download='campaign-map.png'; a.click();
+  };
+  img.src = url;
+});
+
+document.getElementById('copyText').addEventListener('click', ()=>{
+  if(!currentData) return alert('No campaign generated.');
+  const text = currentData.locations.map(l=>`${l.name} — ${l.type} — ${l.tags.join(', ')}\n${l.description}\nHook: ${l.hook}\n`).join('\n');
+  navigator.clipboard.writeText(text).then(()=>alert('Locations copied to clipboard.'));
+});
+
+searchEl.addEventListener('input', ()=>{
+  const q = searchEl.value.toLowerCase();
+  Array.from(locationsEl.children).forEach(el=>{
+    const txt = el.textContent.toLowerCase();
+    el.style.display = txt.includes(q) ? '' : 'none';
+  });
+});
+
+// click background to deselect
+mapSvg.addEventListener('click', ()=>{ if(selectedNode){ selectedNode.querySelector('circle').classList.remove('selected'); selectedNode=null; } });
+
+// quick sample on load
+promptEl.value = "Fog-bound coastal kingdom; wrecks, corsairs, ruined lighthouse; a drowned cult seeks an old beacon.";
+genBtn.click();
+</script>
+</body>
+</html>
+
+
+Quick notes
+- The generator is client-side only and deterministic from your description; tweak the prompt to change tone and details.
+- Click a location to add it to the map, drag nodes to adjust positions, use Auto Layout to arrange, and export JSON or PNG for session prep.
