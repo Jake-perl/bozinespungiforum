@@ -1,95 +1,55 @@
-DnD Character Builder — full HTML/CSS/JS (magic-scroll look)
-Below is a single-file HTML page you can drop into your site. It produces an old-fashioned magic-scroll UI, asks for race/class/background, rolls ability scores (4d6 drop lowest), picks modifiers, makes a short character description, and shows an image placeholder. The image section includes a clear fetch stub you must replace with your chosen image-generation API endpoint and key.
+Updated magic-scroll character builder — richer descriptions and consistent portrait frame
+Below is a single-file HTML page you can drop into your site. It generates longer, more accurate character descriptions (personality, appearance, skills, equipment, backstory hooks) and builds a detailed, consistent image-generation prompt with a fixed ornate frame so every portrait shares the same visual presentation. Replace the /generate-image placeholder with your image API endpoint or server proxy as needed.
 Save as index.html and open in your browser.
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Magic Scroll Character Builder</title>
+<title>Arcane Character Scroll — Detailed</title>
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#2b2218;
-    --parchment:#f5e7cf;
+    --bg:#241f18;
+    --parchment:#f7ead0;
     --ink:#2b1708;
     --accent:#7a3b00;
     --muted:#6b5b46;
+    --frame:#7a4b1f;
   }
-
-  html,body{height:100%;margin:0;background:radial-gradient(ellipse at center,#3a3229 0%, #151213 70%);font-family: "IM Fell DW Pica", serif;color:var(--ink);}
-
-  /* Centering container */
-  .stage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
-
-  /* Scroll visual */
+  html,body{height:100%;margin:0;background:radial-gradient(ellipse at center,#332b24 0%, #0f0e0d 70%);font-family: "IM Fell DW Pica", serif;color:var(--ink);}
+  .stage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;}
   .scroll {
-    width:920px;
-    max-width:95%;
-    background: linear-gradient(180deg, rgba(255,250,240,1) 0%, rgba(245,231,207,1) 60%);
-    border-radius:18px;
-    padding:36px 48px;
-    box-shadow: 0 18px 40px rgba(0,0,0,0.6), inset 0 4px 12px rgba(255,255,255,0.35);
-    position:relative;
-    border:6px solid rgba(122,59,0,0.15);
+    width:1000px; max-width:96%;
+    background: linear-gradient(180deg, rgba(255,250,240,1) 0%, rgba(247,234,208,1) 60%);
+    border-radius:18px;padding:40px 44px;box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 6px 18px rgba(255,255,255,0.35);
+    position:relative;border:8px solid rgba(122,59,0,0.14);
   }
-
-  .scroll:before, .scroll:after{
-    content:"";
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    width:94%;
-    height:36px;
-    background:linear-gradient(180deg, rgba(122,59,0,0.12), rgba(0,0,0,0.0));
-    top:-28px;
-    border-radius:12px;
-  }
-  .scroll:after{bottom:-28px; top:auto; transform:translateX(-50%) rotate(180deg);}
-
-  /* Burned edges */
-  .scroll .edge {
-    position:absolute;inset:0;border-radius:18px;pointer-events:none;
-    background-image:
-      radial-gradient(120px 60px at 6% 6%, rgba(0,0,0,0.06), transparent 10%),
-      radial-gradient(120px 60px at 94% 6%, rgba(0,0,0,0.06), transparent 10%),
-      linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.07));
-    mix-blend-mode:multiply;
-  }
-
-  /* Title */
-  h1{font-family:"Uncial Antiqua", serif;color:var(--accent);font-size:40px;margin:0 0 8px;text-align:center;letter-spacing:1px;}
-
-  .subtitle{font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;}
-
-  /* Form layout */
-  .panel{display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start;}
-  @media(max-width:900px){ .panel{grid-template-columns:1fr; } .right-col{order:2;} }
-
-  /* Left form */
+  .scroll:before, .scroll:after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:96%;height:36px;background:linear-gradient(180deg, rgba(122,59,0,0.12), rgba(0,0,0,0));top:-30px;border-radius:12px;}
+  .scroll:after{bottom:-30px;top:auto;transform:translateX(-50%) rotate(180deg);}
+  .edge{position:absolute;inset:0;border-radius:18px;pointer-events:none;background-image:radial-gradient(120px 60px at 6% 6%, rgba(0,0,0,0.06), transparent 10%),radial-gradient(120px 60px at 94% 6%, rgba(0,0,0,0.06), transparent 10%),linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.07));mix-blend-mode:multiply;}
+  h1{font-family:"Uncial Antiqua", serif;color:var(--accent);font-size:42px;margin:0 0 8px;text-align:center;}
+  .subtitle{font-size:13px;color:var(--muted);text-align:center;margin-bottom:18px;}
+  .panel{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start;}
+  @media(max-width:980px){ .panel{grid-template-columns:1fr; } .right-col{order:2;} }
   .card{background:transparent;padding:0;border-radius:8px;}
   .field{margin-bottom:14px;}
   label{display:block;font-weight:700;margin-bottom:6px;}
-  select,input[type="text"]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.95);font-size:15px;}
+  select,input[type="text"]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.96);font-size:15px;}
   button.primary{background:var(--accent);color:white;border:0;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(122,59,0,0.28);}
   button.ghost{background:transparent;border:1px dashed rgba(0,0,0,0.06);padding:8px 12px;border-radius:8px;cursor:pointer;}
-
-  /* Right column (preview) */
-  .right-col{background:linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.25));padding:18px;border-radius:12px;border:1px solid rgba(0,0,0,0.05);}
-  .portrait{width:100%;height:320px;background:linear-gradient(180deg,#efe1c8,#e7d1b1);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;font-size:14px;border:6px double rgba(122,59,0,0.08);overflow:hidden;position:relative;}
-  .portrait img{width:100%;height:100%;object-fit:cover;}
+  .right-col{background:linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.28));padding:18px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);}
+  .portrait-frame{width:100%;height:340px;background:linear-gradient(180deg,#efe3cc,#ead9bb);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;font-size:14px;border:8px solid var(--frame);overflow:hidden;position:relative;}
+  .portrait-frame .inner-frame{position:absolute;inset:14px;border-radius:6px;border:6px double rgba(122,59,0,0.07);overflow:hidden;background:linear-gradient(180deg,#efe1c8,#e6d2b5);}
+  .portrait-frame img{width:100%;height:100%;object-fit:cover;display:block;}
+  .portrait-placeholder{padding:18px;text-align:center;color:var(--muted);font-weight:700;}
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
-  .stat{background:rgba(0,0,0,0.02);padding:8px;border-radius:8px;text-align:center;font-weight:700;}
-  .desc{margin-top:12px;background:rgba(0,0,0,0.02);padding:10px;border-radius:8px;font-size:14px;min-height:92px;}
-
-  footer.scroll-foot{margin-top:20px;text-align:center;color:var(--muted);font-size:13px;}
-
-  /* Decorative glyphs */
-  .glyphs{position:absolute;right:22px;top:18px;opacity:0.12;font-size:68px;color:var(--accent);transform:rotate(-10deg);pointer-events:none;}
-
-  /* small helpers */
-  .inline {display:flex;gap:8px;align-items:center;}
+  .stat{background:rgba(0,0,0,0.02);padding:10px;border-radius:8px;text-align:center;font-weight:700;}
+  .desc{margin-top:12px;background:rgba(0,0,0,0.02);padding:12px;border-radius:8px;font-size:14px;min-height:160px;overflow:auto;}
+  footer.scroll-foot{margin-top:14px;text-align:center;color:var(--muted);font-size:13px;}
+  .glyphs{position:absolute;right:28px;top:22px;opacity:0.12;font-size:74px;color:var(--accent);transform:rotate(-10deg);pointer-events:none;}
   .small{font-size:13px;color:var(--muted);}
+  textarea.promptBox{width:100%;height:110px;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#fffdf6;font-family:inherit;font-size:13px;resize:vertical;}
 </style>
 </head>
 <body>
@@ -99,7 +59,7 @@ Save as index.html and open in your browser.
     <div class="glyphs">✦✵✧</div>
 
     <h1>Arcane Character Scroll</h1>
-    <div class="subtitle">Old-fashioned character forging for your next adventure</div>
+    <div class="subtitle">Forge a detailed adventurer with a rich biography and framed portrait</div>
 
     <div class="panel">
       <div class="card">
@@ -108,7 +68,7 @@ Save as index.html and open in your browser.
           <input id="name" type="text" placeholder="Edrin Thorne" />
         </div>
 
-        <div class="field inline">
+        <div class="field inline" style="display:flex;gap:12px;">
           <div style="flex:1">
             <label for="race">Race</label>
             <select id="race">
@@ -120,7 +80,7 @@ Save as index.html and open in your browser.
               <option>Gnome</option>
             </select>
           </div>
-          <div style="width:140px">
+          <div style="width:150px">
             <label for="gender">Gender</label>
             <select id="gender">
               <option>Male</option>
@@ -130,7 +90,7 @@ Save as index.html and open in your browser.
           </div>
         </div>
 
-        <div class="field inline">
+        <div class="field inline" style="display:flex;gap:12px;">
           <div style="flex:1">
             <label for="class">Class</label>
             <select id="class">
@@ -142,7 +102,7 @@ Save as index.html and open in your browser.
               <option>Bard</option>
             </select>
           </div>
-          <div style="width:140px">
+          <div style="width:150px">
             <label for="level">Level</label>
             <select id="level">
               <option>1</option>
@@ -166,19 +126,21 @@ Save as index.html and open in your browser.
           </select>
         </div>
 
-        <div class="field inline">
+        <div class="field inline" style="display:flex;gap:10px;">
           <button class="primary" id="rollBtn">Summon Character</button>
           <button class="ghost" id="resetBtn" type="button">Clear</button>
         </div>
 
         <div class="field small" style="margin-top:6px;">
-          Rolling method: <strong>4d6 drop lowest</strong>; ability modifiers applied by race where appropriate.
+          Rolling method: <strong>4d6 drop lowest</strong>. Portrait generation requires configuring an image endpoint.
         </div>
       </div>
 
       <div class="right-col">
-        <div class="portrait" id="portrait">
-          <div id="portraitLabel">Portrait will appear here after generation</div>
+        <div class="portrait-frame" id="portraitFrame" aria-live="polite">
+          <div class="inner-frame" id="portraitInner">
+            <div class="portrait-placeholder" id="portraitLabel">Portrait will appear here after generation</div>
+          </div>
         </div>
 
         <div class="stats" id="statsGrid" aria-live="polite" style="margin-top:12px;">
@@ -194,7 +156,12 @@ Save as index.html and open in your browser.
           The scroll awaits your command.
         </div>
 
-        <footer class="scroll-foot">Use the Summon button to generate name, stats, description, and a portrait (portrait requires configuring an image API).</footer>
+        <div style="margin-top:10px;">
+          <div class="small" style="margin-bottom:6px;">Generated image prompt (for manual use or server proxy)</div>
+          <textarea class="promptBox" id="imagePrompt" readonly placeholder="Prompt will appear here after generation"></textarea>
+        </div>
+
+        <footer class="scroll-foot">Portraits use a single ornate frame for visual consistency. Replace /generate-image in the script with your image API proxy.</footer>
       </div>
     </div>
   </div>
@@ -208,7 +175,7 @@ function roll4d6DropLowest(){
   return rolls.slice(1).reduce((s,n)=>s+n,0);
 }
 
-/* Simple racial modifiers */
+/* Racial modifiers (simple defaults) */
 const raceMods = {
   "Human":   {STR:1,DEX:1,CON:1,INT:1,WIS:1,CHA:1},
   "Elf":     {STR:0,DEX:2,CON:0,INT:0,WIS:0,CHA:0},
@@ -218,26 +185,163 @@ const raceMods = {
   "Gnome":   {STR:0,DEX:0,CON:0,INT:2,WIS:0,CHA:0}
 };
 
-/* Class-based short flavor text */
+/* Class flavor and typical equipment */
 const classFlavor = {
-  "Fighter":"A seasoned combatant trained in arms and armor, steady in battle.",
-  "Wizard":"A student of the arcane, studying spells and ancient tomes.",
-  "Rogue":"Quick and cunning, skilled in stealth and misdirection.",
-  "Cleric":"A devotee of the divine, channeling power to heal and smite.",
-  "Ranger":"A skilled hunter and tracker, at home in wild places.",
-  "Bard":"A charismatic performer weaving magic through story and song."
+  "Fighter": {
+    short:"A seasoned combatant trained in arms and armor.",
+    typical:"Longsword and shield; heavy armor; battlefield tactics."
+  },
+  "Wizard": {
+    short:"A student of the arcane, versed in spellcraft and lore.",
+    typical:"Spellbook with several cantrips and first-level spells; a simple staff; scholarly robes."
+  },
+  "Rogue": {
+    short:"Quick and cunning, skilled in stealth and subtlety.",
+    typical:"Shortsword or daggers; leather armor; thieves' tools; a concealed pouch of odd trinkets."
+  },
+  "Cleric": {
+    short:"A devotee of the divine, channeling power to heal and smite.",
+    typical:"Mace or warhammer; holy symbol; chain or scale armor; prayer beads."
+  },
+  "Ranger": {
+    short:"A skilled hunter and tracker at home in wild places.",
+    typical:"Longbow and twin shortswords; traveler’s cloak; survival kit and animal lore."
+  },
+  "Bard": {
+    short:"A charismatic performer who weaves magic through music and story.",
+    typical:"Lute or flute; light armor; a collection of songs and worldly contacts."
+  }
 };
 
-/* Background flavor */
 const backgroundFlavor = {
-  "Soldier":"Has seen conflict and knows the rhythms of war.",
-  "Sage":"A life of study lends knowledge and curiosity.",
-  "Criminal":"Shadowed dealings and useful underworld contacts.",
-  "Folk Hero":"Beloved by common folk for an act of bravery.",
-  "Noble":"Born to privilege, trained in etiquette and politics.",
-  "Hermit":"Time alone brought insight and unusual habits."
+  "Soldier":"Has seen combat and knows military structure, ranks, and discipline.",
+  "Sage":"A life of study gives deep knowledge of history, arcana, or natural science.",
+  "Criminal":"Experience with illicit networks, forgery, and clandestine operations.",
+  "Folk Hero":"A local legend who performed a notable act of courage for common folk.",
+  "Noble":"Raised with privilege, knowing etiquette, heraldry, and political maneuvering.",
+  "Hermit":"Years of solitude granted a specific revelation and unusual perspectives."
 };
 
+/* Derive modifier for a score */
+function abilityMod(n){
+  return Math.floor((n-10)/2);
+}
+
+/* Compose a long, accurate description */
+function buildLongDescription({name, race, gender, cls, level, bg, base, final}){
+  // Appearance: use race, gender, top physical stats
+  const physPriority = [['STR','muscular build'],['DEX','lithe and quick'],['CON','sturdy and robust']];
+  let physicalNotes = [];
+  const topPhysical = ['STR','DEX','CON'].slice().sort((a,b)=>final[b]-final[a]);
+  topPhysical.slice(0,2).forEach((stat,i)=>{
+    const note = physPriority.find(p=>p[0]===stat)[1];
+    physicalNotes.push(note);
+  });
+
+  // Mental/personality notes using INT/WIS/CHA
+  const mentalPriority = [['INT','curious and analytical'],['WIS','observant and grounded'],['CHA','charming and persuasive']];
+  let mentalNotes = [];
+  const topMental = ['INT','WIS','CHA'].slice().sort((a,b)=>final[b]-final[a]);
+  topMental.slice(0,2).forEach(stat=>{
+    const note = mentalPriority.find(p=>p[0]===stat)[1];
+    mentalNotes.push(note);
+  });
+
+  // Proficiencies and gear (class typical)
+  const classInfo = classFlavor[cls] || {short:'', typical:'Basic adventuring gear.'};
+
+  // Backstory seeds: combine background + a twist using strongest stat
+  const strongStat = Object.entries(final).sort((a,b)=>b[1]-a[1])[0][0];
+  const strongStatText = {
+    STR:'relies on strength to resolve things',
+    DEX:'relies on speed and precision',
+    CON:'endures hardship and resists illness',
+    INT:'solves problems through thought and knowledge',
+    WIS:'trusts intuition and careful observation',
+    CHA:'influences others and leads by personality'
+  }[strongStat];
+
+  // Detailed paragraphs
+  const para1 = `${name} is a ${gender.toLowerCase()} ${race} ${cls} of level ${level}, described as ${physicalNotes.join(" and ")} in appearance and ${mentalNotes.join(" and ")} in temperament. ${classInfo.short} ${backgroundFlavor[bg] || ""}`;
+  const para2 = `Abilities: STR ${final.STR} (${abilityMod(final.STR)>=0?"+":""}${abilityMod(final.STR)}), DEX ${final.DEX} (${abilityMod(final.DEX)>=0?"+":""}${abilityMod(final.DEX)}), CON ${final.CON} (${abilityMod(final.CON)>=0?"+":""}${abilityMod(final.CON)}), INT ${final.INT} (${abilityMod(final.INT)>=0?"+":""}${abilityMod(final.INT)}), WIS ${final.WIS} (${abilityMod(final.WIS)>=0?"+":""}${abilityMod(final.WIS)}), CHA ${final.CHA} (${abilityMod(final.CHA)>=0?"+":""}${abilityMod(final.CHA)}). ${name} ${strongStatText}. Typical equipment includes: ${classInfo.typical}`;
+  const para3 = `Personality and motivation: ${generatePersonality(name, race, cls, bg, final)}. Story hooks and plot seeds: ${generateHooks(name, race, cls, bg, final)}.`;
+  return [para1, para2, para3].join("\n\n");
+}
+
+/* Personality generator: combines class, background, and stats */
+function generatePersonality(name, race, cls, bg, final){
+  const traits = [];
+  // base trait from background
+  if(bg === 'Soldier') traits.push('disciplined, values order and duty');
+  if(bg === 'Sage') traits.push('inquisitive, patient, slightly absent-minded');
+  if(bg === 'Criminal') traits.push('cautious, streetwise, pragmatic');
+  if(bg === 'Folk Hero') traits.push('humble, empathetic, protective of the weak');
+  if(bg === 'Noble') traits.push('proud, polished, strategic in conversation');
+  if(bg === 'Hermit') traits.push('reflective, cryptic, attuned to the unusual');
+
+  // temperament from highest mental stat
+  const mentalTop = ['INT','WIS','CHA'].slice().sort((a,b)=>final[b]-final[a])[0];
+  if(mentalTop === 'INT') traits.push('prefers planning and study over impulse');
+  if(mentalTop === 'WIS') traits.push('reads situations quickly and trusts instincts');
+  if(mentalTop === 'CHA') traits.push('wins people over and defuses conflict with charm');
+
+  // add a small quirk based on low CON or low CHA
+  if(final.CON < 10) traits.push('suffers minor ailments or tires easily');
+  if(final.CHA < 10) traits.push('awkward in formal social settings');
+
+  return traits.join("; ");
+}
+
+/* Story hooks generator */
+function generateHooks(name, race, cls, bg, final){
+  const hooks = [];
+  // Hook: lost relative or debt if CHA low
+  if(final.CHA < 10) hooks.push('owed a debt that must be repaid through risky work');
+  // Hook: secret past for criminal or noble
+  if(bg === 'Criminal') hooks.push('an old contact resurfaces with a dangerous job');
+  if(bg === 'Noble') hooks.push('a family rivalry demands intervention');
+  // Hook: vision/revelation for hermit or sage
+  if(bg === 'Hermit' || bg === 'Sage') hooks.push('possesses a fragment of forbidden lore that others seek');
+  // Always include a simple personal quest based on top stat
+  const top = Object.entries(final).sort((a,b)=>b[1]-a[1])[0][0];
+  if(top === 'STR') hooks.push('prove their strength in a coming trial or tournament');
+  if(top === 'DEX') hooks.push('undertake a delicate theft or infiltration');
+  if(top === 'INT') hooks.push('decode an old manuscript or solve a riddle-laden mystery');
+  if(top === 'WIS') hooks.push('find a place of spiritual significance or guide the lost');
+  if(top === 'CHA') hooks.push('rally a group or broker an important alliance');
+  if(top === 'CON') hooks.push('survive an expedition into a harsh environment');
+
+  return hooks.join("; ");
+}
+
+/* Build an ornate, consistent image prompt */
+function buildImagePrompt({name,race,gender,cls,level,final}){
+  // Visual key elements and consistent ornate frame
+  const topStats = Object.entries(final).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>`${e[0]} ${e[1]}`).join(", ");
+  const appearance = `A ${gender.toLowerCase()} ${race} ${cls}, level ${level}, portrait orientation, waist-up, facing forward with natural posture`;
+  const mood = `tone: thoughtful, cinematic lighting with warm highlights and soft shadows`;
+  const detail = `visual details: detailed facial features, natural skin texture, visible clothing appropriate to class, subtle wear and dirt for realism, scars or jewellery as accents`;
+  const frame = `uniform ornate gilded frame, painted on aged parchment background, consistent composition: frame visible, slightly vignetted corners, warm color palette`;
+  const story = `imply status and role through props: ${classFlavor[cls] ? classFlavor[cls].typical : 'adventuring gear'}; convey personality suggested by top stats: ${topStats}`;
+  const strictness = `style: high-detail painted fantasy portrait, realistic textures, 4k detail, no modern artifacts, unobtrusive typography, naturalistic anatomy, no text overlays`;
+  const seed = `creative constraints: maintain identical frame across portraits; crop so face and upper torso fill frame; neutral studio background behind frame to ensure consistent cropping`;
+
+  const prompt = [
+    `Prompt: ${appearance}.`,
+    `${mood}.`,
+    `${detail}.`,
+    `${story}.`,
+    `${frame}.`,
+    `${strictness}.`,
+    `${seed}.`,
+    `Reference: Produce a single ornate framed portrait that will be used with identical frame for every character.`,
+    `Do not include any modern objects or logos.`
+  ].join(" ");
+
+  return prompt;
+}
+
+/* Apply racial modifiers */
 function applyRaceMods(base, mods){
   const out = Object.assign({}, base);
   for(const k of Object.keys(out)){
@@ -246,20 +350,16 @@ function applyRaceMods(base, mods){
   return out;
 }
 
-/* modifier text helper */
-function abilityMod(n){
-  return Math.floor((n-10)/2);
-}
-
-/* Character generation */
-function generateCharacter(){
+/* Main generator */
+async function generateCharacter(){
   const name = document.getElementById('name').value.trim() || "Unnamed";
   const race = document.getElementById('race').value;
+  const gender = document.getElementById('gender').value;
   const cls = document.getElementById('class').value;
   const bg = document.getElementById('background').value;
   const level = parseInt(document.getElementById('level').value,10);
 
-  // roll stats
+  // roll base stats
   const base = {
     STR: roll4d6DropLowest(),
     DEX: roll4d6DropLowest(),
@@ -272,72 +372,54 @@ function generateCharacter(){
   const mods = raceMods[race] || {};
   const final = applyRaceMods(base, mods);
 
-  // Update UI stats
+  // Update stats display (show score and modifier)
   ['STR','DEX','CON','INT','WIS','CHA'].forEach(k=>{
-    document.getElementById(k).textContent = final[k] + " (" + (abilityMod(final[k])>=0?"+":"") + abilityMod(final[k]) + ")";
+    const m = abilityMod(final[k]);
+    document.getElementById(k).textContent = `${final[k]} (${m>=0?'+':''}${m})`;
   });
 
-  // Build short description
-  const descLines = [
-    "<strong>" + name + "</strong>, a level " + level + " " + race + " " + cls + ".",
-    classFlavor[cls] || "",
-    backgroundFlavor[bg] || "",
-    "Key stats: " + Object.entries(final).sort((a,b)=>abilityMod(b[1]) - abilityMod(a[1])).slice(0,2).map(e=>e[0]).join(", ") + "."
-  ];
-  const descHtml = descLines.filter(Boolean).join("<br><br>");
-  document.getElementById('charDesc').innerHTML = descHtml;
+  // Build long description and show
+  const longDesc = buildLongDescription({name, race, gender, cls, level, bg, base, final});
+  // Convert newlines to paragraphs for HTML
+  document.getElementById('charDesc').innerHTML = longDesc.split("\n\n").map(p=>`<p style="margin:0 0 10px;">${p}</p>`).join('');
 
-  // Kick off portrait generation (uses an external image API; see notes below)
-  requestPortrait({name, race, cls, level, final});
+  // Build image prompt and show in prompt box
+  const prompt = buildImagePrompt({name, race, gender, cls, level, final});
+  document.getElementById('imagePrompt').value = prompt;
+
+  // Kick off portrait request (stub). Replace /generate-image with your endpoint.
+  requestPortrait({name, race, gender, cls, level, prompt});
 }
 
-/* Placeholder portrait flow
-   Replace the fetch call with your image API endpoint and authentication.
-   The stub below expects an endpoint at /generate-image that accepts JSON:
-     { prompt: "..." }
-   and returns { imageUrl: "https://..." }.
-   Alternatively, adapt to whichever image API you use (OpenAI, Stability, etc.).
-*/
-async function requestPortrait({name, race, cls, level, final}){
-  const portraitDiv = document.getElementById('portrait');
-  portraitDiv.innerHTML = '<div style="text-align:center;color:var(--muted);font-weight:700">Summoning portrait…</div>';
-
-  // Build a compact creative prompt for an image model
-  const topStats = Object.entries(final).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>e[0]).join(" and ");
-  const prompt = `Illustration of a ${race} ${cls} named ${name}, level ${level}, notable attributes: ${topStats}. Styled like an old painted fantasy portrait on parchment, warm tones, ornate frame, dramatic lighting, cinematic.`;
+/* Portrait request function (placeholder) */
+async function requestPortrait({name, race, gender, cls, level, prompt}){
+  const portraitInner = document.getElementById('portraitInner');
+  portraitInner.innerHTML = '<div style="padding:18px;text-align:center;color:var(--muted);font-weight:700">Summoning portrait…</div>';
 
   try{
-    // === Replace this URL and options with your image API call ===
-    // Example placeholder: POST to /generate-image with {prompt}
-    // The server should return JSON { imageUrl: "https://..." } after creation.
+    // === Replace this fetch call with your actual image API proxy ===
     const resp = await fetch('/generate-image', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt, meta: { name, race, cls, level } })
     });
 
     if(!resp.ok) throw new Error('image generation failed');
-
     const data = await resp.json();
     const imageUrl = data.imageUrl;
 
-    // Display the image if provided
     if(imageUrl){
-      portraitDiv.innerHTML = '';
+      portraitInner.innerHTML = '';
       const img = document.createElement('img');
       img.src = imageUrl;
-      img.alt = name + " portrait";
-      portraitDiv.appendChild(img);
+      img.alt = `${name} portrait`;
+      portraitInner.appendChild(img);
     } else {
       throw new Error('no image returned');
     }
   } catch(err){
-    // If no image integration is available, show a stylized placeholder and the prompt for manual use
-    portraitDiv.innerHTML = '<div style="padding:18px;text-align:center;color:var(--muted)"><div style="font-weight:700;margin-bottom:8px">Portrait unavailable</div>' +
-      '<div style="font-size:13px">Copy the prompt below into your image service to create the portrait:</div>' +
-      '<textarea readonly style="margin-top:10px;width:100%;height:120px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#f6efe0;">' +
-      prompt +
-      '</textarea></div>';
+    // Show the prompt for manual use and a graceful placeholder
+    portraitInner.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:13px;">Portrait unavailable from server. Use the prompt below in your image service to create the framed portrait.</div>';
   }
 }
 
@@ -349,26 +431,22 @@ document.getElementById('rollBtn').addEventListener('click', ()=>{
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   document.getElementById('name').value = '';
   document.getElementById('race').selectedIndex = 0;
+  document.getElementById('gender').selectedIndex = 0;
   document.getElementById('class').selectedIndex = 0;
   document.getElementById('background').selectedIndex = 0;
   document.getElementById('level').selectedIndex = 0;
   ['STR','DEX','CON','INT','WIS','CHA'].forEach(k=>document.getElementById(k).textContent = '—');
   document.getElementById('charDesc').textContent = 'The scroll awaits your command.';
-  document.getElementById('portrait').innerHTML = '<div id="portraitLabel">Portrait will appear here after generation</div>';
+  document.getElementById('portraitInner').innerHTML = '<div class="portrait-placeholder" id="portraitLabel">Portrait will appear here after generation</div>';
+  document.getElementById('imagePrompt').value = '';
 });
 </script>
 </body>
 </html>
 
 
-
-Integration notes
-- Image generation: the page uses a fetch POST to /generate-image as a placeholder. Replace that call with your chosen API (OpenAI, Stability, Midjourney self-host, etc.). The stub expects JSON {imageUrl: "..."} in the response. If you prefer client-side direct calls, implement proper key protection on a server proxy to avoid exposing secrets.
-- Customise race modifiers, classes, and flavor text easily in the JS objects near the top.
-- To persist characters, add localStorage or send to your server via fetch.
-- Accessibility: inputs include labels and the stats area uses aria-live for updates.
-If you want, I can:
-- Provide a ready-made server example (Node/Express) that proxies to an image API and returns {imageUrl}, or
-- Add localStorage save/load, or
-- Expand class features, skill proficiencies, and equipment generation.
-Tell me which of those you want and I’ll add it directly into the next message.
+Notes:
+- The description generator now produces three substantial paragraphs: appearance/role, detailed ability breakdown with equipment, and personality plus story hooks.
+- The image prompt is long, structured, and enforces the same ornate frame and composition for every portrait so they match visually.
+- Portrait generation still calls a placeholder /generate-image endpoint; keep that proxy server-side to protect any API keys.
+- If you want, I can now add: (1) a ready-made Node/Express proxy endpoint that calls an image API and returns {imageUrl}, or (2) expand the equipment/skills into full DnD 5e sheets with proficiency and saving throws. Which would you like next?
