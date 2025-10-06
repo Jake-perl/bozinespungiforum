@@ -1,0 +1,374 @@
+DnD Character Builder — full HTML/CSS/JS (magic-scroll look)
+Below is a single-file HTML page you can drop into your site. It produces an old-fashioned magic-scroll UI, asks for race/class/background, rolls ability scores (4d6 drop lowest), picks modifiers, makes a short character description, and shows an image placeholder. The image section includes a clear fetch stub you must replace with your chosen image-generation API endpoint and key.
+Save as index.html and open in your browser.
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Magic Scroll Character Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#2b2218;
+    --parchment:#f5e7cf;
+    --ink:#2b1708;
+    --accent:#7a3b00;
+    --muted:#6b5b46;
+  }
+
+  html,body{height:100%;margin:0;background:radial-gradient(ellipse at center,#3a3229 0%, #151213 70%);font-family: "IM Fell DW Pica", serif;color:var(--ink);}
+
+  /* Centering container */
+  .stage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+
+  /* Scroll visual */
+  .scroll {
+    width:920px;
+    max-width:95%;
+    background: linear-gradient(180deg, rgba(255,250,240,1) 0%, rgba(245,231,207,1) 60%);
+    border-radius:18px;
+    padding:36px 48px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.6), inset 0 4px 12px rgba(255,255,255,0.35);
+    position:relative;
+    border:6px solid rgba(122,59,0,0.15);
+  }
+
+  .scroll:before, .scroll:after{
+    content:"";
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    width:94%;
+    height:36px;
+    background:linear-gradient(180deg, rgba(122,59,0,0.12), rgba(0,0,0,0.0));
+    top:-28px;
+    border-radius:12px;
+  }
+  .scroll:after{bottom:-28px; top:auto; transform:translateX(-50%) rotate(180deg);}
+
+  /* Burned edges */
+  .scroll .edge {
+    position:absolute;inset:0;border-radius:18px;pointer-events:none;
+    background-image:
+      radial-gradient(120px 60px at 6% 6%, rgba(0,0,0,0.06), transparent 10%),
+      radial-gradient(120px 60px at 94% 6%, rgba(0,0,0,0.06), transparent 10%),
+      linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.07));
+    mix-blend-mode:multiply;
+  }
+
+  /* Title */
+  h1{font-family:"Uncial Antiqua", serif;color:var(--accent);font-size:40px;margin:0 0 8px;text-align:center;letter-spacing:1px;}
+
+  .subtitle{font-size:13px;color:var(--muted);text-align:center;margin-bottom:20px;}
+
+  /* Form layout */
+  .panel{display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start;}
+  @media(max-width:900px){ .panel{grid-template-columns:1fr; } .right-col{order:2;} }
+
+  /* Left form */
+  .card{background:transparent;padding:0;border-radius:8px;}
+  .field{margin-bottom:14px;}
+  label{display:block;font-weight:700;margin-bottom:6px;}
+  select,input[type="text"]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.95);font-size:15px;}
+  button.primary{background:var(--accent);color:white;border:0;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(122,59,0,0.28);}
+  button.ghost{background:transparent;border:1px dashed rgba(0,0,0,0.06);padding:8px 12px;border-radius:8px;cursor:pointer;}
+
+  /* Right column (preview) */
+  .right-col{background:linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.25));padding:18px;border-radius:12px;border:1px solid rgba(0,0,0,0.05);}
+  .portrait{width:100%;height:320px;background:linear-gradient(180deg,#efe1c8,#e7d1b1);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;font-size:14px;border:6px double rgba(122,59,0,0.08);overflow:hidden;position:relative;}
+  .portrait img{width:100%;height:100%;object-fit:cover;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+  .stat{background:rgba(0,0,0,0.02);padding:8px;border-radius:8px;text-align:center;font-weight:700;}
+  .desc{margin-top:12px;background:rgba(0,0,0,0.02);padding:10px;border-radius:8px;font-size:14px;min-height:92px;}
+
+  footer.scroll-foot{margin-top:20px;text-align:center;color:var(--muted);font-size:13px;}
+
+  /* Decorative glyphs */
+  .glyphs{position:absolute;right:22px;top:18px;opacity:0.12;font-size:68px;color:var(--accent);transform:rotate(-10deg);pointer-events:none;}
+
+  /* small helpers */
+  .inline {display:flex;gap:8px;align-items:center;}
+  .small{font-size:13px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="scroll" role="main" aria-label="Magic Scroll Character Builder">
+    <div class="edge" aria-hidden="true"></div>
+    <div class="glyphs">✦✵✧</div>
+
+    <h1>Arcane Character Scroll</h1>
+    <div class="subtitle">Old-fashioned character forging for your next adventure</div>
+
+    <div class="panel">
+      <div class="card">
+        <div class="field">
+          <label for="name">Character Name</label>
+          <input id="name" type="text" placeholder="Edrin Thorne" />
+        </div>
+
+        <div class="field inline">
+          <div style="flex:1">
+            <label for="race">Race</label>
+            <select id="race">
+              <option>Human</option>
+              <option>Elf</option>
+              <option>Dwarf</option>
+              <option>Halfling</option>
+              <option>Half-Orc</option>
+              <option>Gnome</option>
+            </select>
+          </div>
+          <div style="width:140px">
+            <label for="gender">Gender</label>
+            <select id="gender">
+              <option>Male</option>
+              <option>Female</option>
+              <option>Nonbinary</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field inline">
+          <div style="flex:1">
+            <label for="class">Class</label>
+            <select id="class">
+              <option>Fighter</option>
+              <option>Wizard</option>
+              <option>Rogue</option>
+              <option>Cleric</option>
+              <option>Ranger</option>
+              <option>Bard</option>
+            </select>
+          </div>
+          <div style="width:140px">
+            <label for="level">Level</label>
+            <select id="level">
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="background">Background</label>
+          <select id="background">
+            <option>Soldier</option>
+            <option>Sage</option>
+            <option>Criminal</option>
+            <option>Folk Hero</option>
+            <option>Noble</option>
+            <option>Hermit</option>
+          </select>
+        </div>
+
+        <div class="field inline">
+          <button class="primary" id="rollBtn">Summon Character</button>
+          <button class="ghost" id="resetBtn" type="button">Clear</button>
+        </div>
+
+        <div class="field small" style="margin-top:6px;">
+          Rolling method: <strong>4d6 drop lowest</strong>; ability modifiers applied by race where appropriate.
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="portrait" id="portrait">
+          <div id="portraitLabel">Portrait will appear here after generation</div>
+        </div>
+
+        <div class="stats" id="statsGrid" aria-live="polite" style="margin-top:12px;">
+          <div class="stat"><div>STR</div><div id="STR">—</div></div>
+          <div class="stat"><div>DEX</div><div id="DEX">—</div></div>
+          <div class="stat"><div>CON</div><div id="CON">—</div></div>
+          <div class="stat"><div>INT</div><div id="INT">—</div></div>
+          <div class="stat"><div>WIS</div><div id="WIS">—</div></div>
+          <div class="stat"><div>CHA</div><div id="CHA">—</div></div>
+        </div>
+
+        <div class="desc" id="charDesc">
+          The scroll awaits your command.
+        </div>
+
+        <footer class="scroll-foot">Use the Summon button to generate name, stats, description, and a portrait (portrait requires configuring an image API).</footer>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Utility: roll 4d6 drop lowest */
+function roll4d6DropLowest(){
+  const rolls = Array.from({length:4}, ()=>Math.floor(Math.random()*6)+1);
+  rolls.sort((a,b)=>a-b);
+  return rolls.slice(1).reduce((s,n)=>s+n,0);
+}
+
+/* Simple racial modifiers */
+const raceMods = {
+  "Human":   {STR:1,DEX:1,CON:1,INT:1,WIS:1,CHA:1},
+  "Elf":     {STR:0,DEX:2,CON:0,INT:0,WIS:0,CHA:0},
+  "Dwarf":   {STR:0,DEX:0,CON:2,INT:0,WIS:0,CHA:0},
+  "Halfling":{STR:0,DEX:2,CON:0,INT:0,WIS:0,CHA:0},
+  "Half-Orc":{STR:2,DEX:0,CON:1,INT:0,WIS:0,CHA:0},
+  "Gnome":   {STR:0,DEX:0,CON:0,INT:2,WIS:0,CHA:0}
+};
+
+/* Class-based short flavor text */
+const classFlavor = {
+  "Fighter":"A seasoned combatant trained in arms and armor, steady in battle.",
+  "Wizard":"A student of the arcane, studying spells and ancient tomes.",
+  "Rogue":"Quick and cunning, skilled in stealth and misdirection.",
+  "Cleric":"A devotee of the divine, channeling power to heal and smite.",
+  "Ranger":"A skilled hunter and tracker, at home in wild places.",
+  "Bard":"A charismatic performer weaving magic through story and song."
+};
+
+/* Background flavor */
+const backgroundFlavor = {
+  "Soldier":"Has seen conflict and knows the rhythms of war.",
+  "Sage":"A life of study lends knowledge and curiosity.",
+  "Criminal":"Shadowed dealings and useful underworld contacts.",
+  "Folk Hero":"Beloved by common folk for an act of bravery.",
+  "Noble":"Born to privilege, trained in etiquette and politics.",
+  "Hermit":"Time alone brought insight and unusual habits."
+};
+
+function applyRaceMods(base, mods){
+  const out = Object.assign({}, base);
+  for(const k of Object.keys(out)){
+    out[k] += (mods[k]||0);
+  }
+  return out;
+}
+
+/* modifier text helper */
+function abilityMod(n){
+  return Math.floor((n-10)/2);
+}
+
+/* Character generation */
+function generateCharacter(){
+  const name = document.getElementById('name').value.trim() || "Unnamed";
+  const race = document.getElementById('race').value;
+  const cls = document.getElementById('class').value;
+  const bg = document.getElementById('background').value;
+  const level = parseInt(document.getElementById('level').value,10);
+
+  // roll stats
+  const base = {
+    STR: roll4d6DropLowest(),
+    DEX: roll4d6DropLowest(),
+    CON: roll4d6DropLowest(),
+    INT: roll4d6DropLowest(),
+    WIS: roll4d6DropLowest(),
+    CHA: roll4d6DropLowest()
+  };
+
+  const mods = raceMods[race] || {};
+  const final = applyRaceMods(base, mods);
+
+  // Update UI stats
+  ['STR','DEX','CON','INT','WIS','CHA'].forEach(k=>{
+    document.getElementById(k).textContent = final[k] + " (" + (abilityMod(final[k])>=0?"+":"") + abilityMod(final[k]) + ")";
+  });
+
+  // Build short description
+  const descLines = [
+    "<strong>" + name + "</strong>, a level " + level + " " + race + " " + cls + ".",
+    classFlavor[cls] || "",
+    backgroundFlavor[bg] || "",
+    "Key stats: " + Object.entries(final).sort((a,b)=>abilityMod(b[1]) - abilityMod(a[1])).slice(0,2).map(e=>e[0]).join(", ") + "."
+  ];
+  const descHtml = descLines.filter(Boolean).join("<br><br>");
+  document.getElementById('charDesc').innerHTML = descHtml;
+
+  // Kick off portrait generation (uses an external image API; see notes below)
+  requestPortrait({name, race, cls, level, final});
+}
+
+/* Placeholder portrait flow
+   Replace the fetch call with your image API endpoint and authentication.
+   The stub below expects an endpoint at /generate-image that accepts JSON:
+     { prompt: "..." }
+   and returns { imageUrl: "https://..." }.
+   Alternatively, adapt to whichever image API you use (OpenAI, Stability, etc.).
+*/
+async function requestPortrait({name, race, cls, level, final}){
+  const portraitDiv = document.getElementById('portrait');
+  portraitDiv.innerHTML = '<div style="text-align:center;color:var(--muted);font-weight:700">Summoning portrait…</div>';
+
+  // Build a compact creative prompt for an image model
+  const topStats = Object.entries(final).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>e[0]).join(" and ");
+  const prompt = `Illustration of a ${race} ${cls} named ${name}, level ${level}, notable attributes: ${topStats}. Styled like an old painted fantasy portrait on parchment, warm tones, ornate frame, dramatic lighting, cinematic.`;
+
+  try{
+    // === Replace this URL and options with your image API call ===
+    // Example placeholder: POST to /generate-image with {prompt}
+    // The server should return JSON { imageUrl: "https://..." } after creation.
+    const resp = await fetch('/generate-image', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    if(!resp.ok) throw new Error('image generation failed');
+
+    const data = await resp.json();
+    const imageUrl = data.imageUrl;
+
+    // Display the image if provided
+    if(imageUrl){
+      portraitDiv.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = imageUrl;
+      img.alt = name + " portrait";
+      portraitDiv.appendChild(img);
+    } else {
+      throw new Error('no image returned');
+    }
+  } catch(err){
+    // If no image integration is available, show a stylized placeholder and the prompt for manual use
+    portraitDiv.innerHTML = '<div style="padding:18px;text-align:center;color:var(--muted)"><div style="font-weight:700;margin-bottom:8px">Portrait unavailable</div>' +
+      '<div style="font-size:13px">Copy the prompt below into your image service to create the portrait:</div>' +
+      '<textarea readonly style="margin-top:10px;width:100%;height:120px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#f6efe0;">' +
+      prompt +
+      '</textarea></div>';
+  }
+}
+
+/* Event wiring */
+document.getElementById('rollBtn').addEventListener('click', ()=>{
+  generateCharacter();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  document.getElementById('name').value = '';
+  document.getElementById('race').selectedIndex = 0;
+  document.getElementById('class').selectedIndex = 0;
+  document.getElementById('background').selectedIndex = 0;
+  document.getElementById('level').selectedIndex = 0;
+  ['STR','DEX','CON','INT','WIS','CHA'].forEach(k=>document.getElementById(k).textContent = '—');
+  document.getElementById('charDesc').textContent = 'The scroll awaits your command.';
+  document.getElementById('portrait').innerHTML = '<div id="portraitLabel">Portrait will appear here after generation</div>';
+});
+</script>
+</body>
+</html>
+
+
+
+Integration notes
+- Image generation: the page uses a fetch POST to /generate-image as a placeholder. Replace that call with your chosen API (OpenAI, Stability, Midjourney self-host, etc.). The stub expects JSON {imageUrl: "..."} in the response. If you prefer client-side direct calls, implement proper key protection on a server proxy to avoid exposing secrets.
+- Customise race modifiers, classes, and flavor text easily in the JS objects near the top.
+- To persist characters, add localStorage or send to your server via fetch.
+- Accessibility: inputs include labels and the stats area uses aria-live for updates.
+If you want, I can:
+- Provide a ready-made server example (Node/Express) that proxies to an image API and returns {imageUrl}, or
+- Add localStorage save/load, or
+- Expand class features, skill proficiencies, and equipment generation.
+Tell me which of those you want and I’ll add it directly into the next message.
