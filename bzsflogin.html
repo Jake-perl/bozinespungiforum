@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+.number-22 {
+  font-size: 80px;
+  font-weight: bold;
+  color: #ff2222;
+  text-align: center;
+  animation: pulse 1.2s infinite;
+  font-family: Arial, sans-serif;
+  margin-top: 40px;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 1; }
+}
+</style>
+
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6682997760563954"
+     crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <title>Boz Access Portal - BZSF</title>
+  <style>
+    body {
+      background-color: #ffffff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      border: 1px solid #ccc;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 300px;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #errorMsg {
+      color: red;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .continue-link {
+      display: block;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #777;
+      text-decoration: none;
+    }
+
+    .continue-link:hover {
+      text-decoration: underline;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Sign in to BZSF</h1>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Access Code" required>
+      <button type="submit">Login</button>
+    </form>
+    <p id="errorMsg"></p>
+    <a href="https://bozinespungiforum.net/modern" class="continue-link">Continue without logging in</a>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      // Replace these with your actual credentials
+      const correctUsername = "bozmaster";
+      const correctPassword = "spungi42";
+
+      if (username === correctUsername && password === correctPassword) {
+        window.location.href = "https://bozinespungiforum.net/auth";
+      } else {
+        document.getElementById("errorMsg").textContent = "Access Denied. Invalid Credentials.";
+      }
+    });
+  </script>
+</body>
+</html>
