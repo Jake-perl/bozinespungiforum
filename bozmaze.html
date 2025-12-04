@@ -1,0 +1,213 @@
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <title>Daily Maze Challenge</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f0f0f0;
+      padding: 20px;
+    }
+    canvas {
+      border: 2px solid #333;
+      background: #fff;
+    }
+    #info {
+      margin: 10px 0;
+    }
+    #message {
+      font-weight: bold;
+      min-height: 1.2em;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="info">
+    Initials: <input type="text" id="initials" maxlength="2" placeholder="e.g. AB">
+    <button id="newMaze">Start Daily Maze</button>
+    Moves: <span id="moveCount">0</span> |
+    Time: <span id="timer">0</span>s
+  </div>
+
+  <div id="message">❌ Enter 2 initials before starting.</div>
+  <canvas id="maze" width="600" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById('maze');
+    const ctx = canvas.getContext('2d');
+    const moveCountEl = document.getElementById('moveCount');
+    const timerEl = document.getElementById('timer');
+    const messageEl = document.getElementById('message');
+    const newMazeBtn = document.getElementById('newMaze');
+    const initialsInput = document.getElementById('initials');
+
+    const SIZE = 20;
+    const CELL = canvas.width / SIZE;
+
+    let grid, player, goal, moveCount, gameOver;
+    let timerInterval, startTime;
+
+    const DIRS = [
+      { x: 0, y:-1, w:0, o:2 },
+      { x: 1, y: 0, w:1, o:3 },
+      { x: 0, y: 1, w:2, o:0 },
+      { x:-1, y: 0, w:3, o:1 }
+    ];
+
+    function seedRandom(seed) {
+      let x = Math.sin(seed) * 10000;
+      return () => {
+        x = Math.sin(x) * 10000;
+        return x - Math.floor(x);
+      };
+    }
+
+    function carveMaze(seed) {
+      const rand = seedRandom(seed);
+      grid = Array(SIZE).fill().map(() =>
+        Array(SIZE).fill().map(() => [false, false, false, false])
+      );
+
+      const visited = Array(SIZE).fill().map(() => Array(SIZE).fill(false));
+      const frontier = [];
+
+      function addFrontier(r, c) {
+        visited[r][c] = true;
+        DIRS.forEach((d, i) => {
+          const nr = r + d.y;
+          const nc = c + d.x;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && !visited[nr][nc]) {
+            frontier.push({ r: nr, c: nc, from: { r, c, dir: i } });
+          }
+        });
+      }
+
+      addFrontier(0, 0); // Start from top-left
+
+      while (frontier.length) {
+        const idx = Math.floor(rand() * frontier.length);
+        const cell = frontier.splice(idx, 1)[0];
+        const { r, c, from } = cell;
+        if (visited[r][c]) continue;
+
+        grid[r][c][(from.dir + 2) % 4] = true;
+        grid[from.r][from.c][from.dir] = true;
+        addFrontier(r, c);
+      }
+
+      // Random goal based on seed
+      const goalSeed = Math.floor(rand() * SIZE * SIZE);
+      goal = { r: goalSeed % SIZE, c: Math.floor(goalSeed / SIZE) };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const x = c * CELL, y = r * CELL;
+          const w = grid[r][c];
+          if (!w[0]) ctx.strokeRect(x, y, CELL, 0);
+          if (!w[1]) ctx.strokeRect(x + CELL, y, 0, CELL);
+          if (!w[2]) ctx.strokeRect(x, y + CELL, CELL, 0);
+          if (!w[3]) ctx.strokeRect(x, y, 0, CELL);
+        }
+      }
+      ctx.fillStyle = '#28a';
+      ctx.fillRect(player.c * CELL + 4, player.r * CELL + 4, CELL - 8, CELL - 8);
+      ctx.fillStyle = '#a22';
+      ctx.fillRect(goal.c * CELL + 4, goal.r * CELL + 4, CELL - 8, CELL - 8);
+    }
+
+    function tryMove(dirIdx) {
+      if (gameOver) return;
+      const d = DIRS[dirIdx];
+      const nr = player.r + d.y;
+      const nc = player.c + d.x;
+      if (nr<0||nr>=SIZE||nc<0||nc>=SIZE) return;
+
+      const open = grid[player.r][player.c][d.w];
+      if (!open) return;
+
+      player.r = nr; player.c = nc;
+      moveCountEl.textContent = ++moveCount;
+
+      if (player.r === goal.r && player.c === goal.c) {
+        gameOver = true;
+        clearInterval(timerInterval);
+        const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+        const initials = initialsInput.value.toUpperCase().trim();
+
+        if (!/^[A-Z]{2}$/.test(initials)) {
+          messageEl.textContent = '❌ Please enter 2 valid initials (A–Z).';
+          return;
+        }
+
+        const score = Math.round((1 / (moveCount * timeTaken)) * 100000);
+        messageEl.textContent = `🎉 ${initials} escaped in ${moveCount} moves, ${timeTaken}s — Score: ${score}`;
+
+        const payload = {
+          initials,
+          date: new Date().toISOString().slice(0,10),
+          moves: moveCount,
+          time: timeTaken,
+          score,
+          timestamp: Date.now()
+        };
+
+        fetch("https://your-cloudflare-worker-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }).then(() => console.log("Score submitted"));
+      }
+
+      draw();
+    }
+
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      timerEl.textContent = elapsed;
+    }
+
+    function init() {
+      const initials = initialsInput.value.toUpperCase().trim();
+      if (!/^[A-Z]{2}$/.test(initials)) {
+        messageEl.textContent = '❌ Enter 2 initials before starting.';
+        return;
+      }
+
+      const seed = parseInt(new Date().toISOString().slice(0,10).replace(/-/g, ''));
+      carveMaze(seed);
+      player = { r: 0, c: 0 };
+      moveCount = 0;
+      gameOver = false;
+      moveCountEl.textContent = 0;
+      messageEl.textContent = '';
+      startTime = Date.now();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 1000);
+      draw();
+    }
+
+    window.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowUp':    e.preventDefault(); tryMove(0); break;
+        case 'ArrowRight': e.preventDefault(); tryMove(1); break;
+        case 'ArrowDown':  e.preventDefault(); tryMove(2); break;
+        case 'ArrowLeft':  e.preventDefault(); tryMove(3); break;
+      }
+    });
+
+    newMazeBtn.addEventListener('click', init);
+    init();
+  </script>
+
+<!-- Cloudflare Pages Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;7c984c6d642a41ca84f15f40b3165c5e&quot;}"></script><!-- Cloudflare Pages Analytics -->
+
+</body></html>
