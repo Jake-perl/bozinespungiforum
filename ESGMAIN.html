@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BZSF ESG Investments – Profit-Driven Innovation</title>
+  <meta name="description" content="BZSF empowers high-end clients with profit-driven ESG investing. Discover our mission, pillars, impact metrics, and visionary founders." />
+  <meta property="og:title" content="BZSF ESG Investments – Profit-Driven Innovation" />
+  <meta property="og:description" content="BZSF empowers high-end clients with profit-driven ESG investing. Discover our mission, pillars, impact metrics, and visionary founders." />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:400,700|Playfair+Display:700&display=swap" />
+  <style>
+    :root {
+      --primary-green: #4CAF50;
+      --accent-gold: #C9B037;
+      --neutral-bg: #F5F5F5;
+      --neutral-light: #E0E5E2;
+      --text-dark: #222;
+      --text-light: #fff;
+      --focus-outline: 2px solid #4CAF50;
+    }
+    html {
+      scroll-behavior: smooth;
+      background: var(--neutral-bg);
+    }
+    body {
+      margin: 0;
+      font-family: 'Inter', Arial, sans-serif;
+      color: var(--text-dark);
+      background: var(--neutral-bg);
+      line-height: 1.6;
+    }
+    header {
+      background: var(--neutral-bg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(76,175,80,0.05);
+    }
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--primary-green);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+    nav ul {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    nav a {
+      color: var(--text-dark);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: color 0.2s;
+      position: relative;
+    }
+    nav a:focus {
+      outline: var(--focus-outline);
+      border-radius: 4px;
+    }
+    nav a:hover {
+      color: var(--primary-green);
+    }
+    .cta-btn {
+      background: var(--primary-green);
+      color: var(--text-light);
+      border: none;
+      border-radius: 24px;
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-left: 1rem;
+    }
+    .cta-btn:hover, .cta-btn:focus {
+      background: var(--accent-gold);
+      color: var(--text-dark);
+      outline: var(--focus-outline);
+    }
+
+    /* Hero Section */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 90vh;
+      background: linear-gradient(120deg, #A8D5BA 0%, #F5F5F5 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      color: var(--primary-green);
+      margin-bottom: 1rem;
+      letter-spacing: 1px;
+      animation: fadeInUp 1s cubic-bezier(.6,.2,.1,1) 0.2s both;
+    }
+    .hero .animated-keywords {
+      font-size: 1.5rem;
+      color: var(--accent-gold);
+      font-weight: 700;
+      min-height: 2.5rem;
+      margin-bottom: 1.5rem;
+      animation: fadeIn 1.2s cubic-bezier(.6,.2,.1,1) 0.6s both;
+    }
+    .hero p {
+      font-size: 1.25rem;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto 2rem auto;
+      animation: fadeIn 1.2s cubic-bezier(.6,.2,.1,1) 1s both;
+    }
+    .hero .cta-btn {
+      font-size: 1.1rem;
+      padding: 1rem 2.5rem;
+      margin-top: 1rem;
+      animation: fadeIn 1.2s cubic-bezier(.6,.2,.1,1) 1.4s both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    @keyframes fadeIn {
+      from { opacity: 0;}
+      to { opacity: 1;}
+    }
+
+    /* Mission & ESG Section */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 2rem 2rem 2rem;
+      background: var(--neutral-bg);
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      color: var(--primary-green);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .section-subtitle {
+      color: var(--accent-gold);
+      font-size: 1.1rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      letter-spacing: 1px;
+    }
+    .mission-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .mission-text {
+      flex: 1 1 350px;
+      min-width: 300px;
+      font-size: 1.15rem;
+      color: #333;
+    }
+    .esg-explainer {
+      flex: 1 1 350px;
+      min-width: 300px;
+      background: var(--neutral-light);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(76,175,80,0.05);
+    }
+    .esg-explainer h3 {
+      color: var(--primary-green);
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+    .esg-explainer ul {
+      padding-left: 1.2rem;
+      margin: 0;
+      color: #444;
+      font-size: 1rem;
+    }
+
+    /* Pillars Section */
+    .pillars {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 2rem;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .pillar-card {
+      flex: 1 1 250px;
+      min-width: 220px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(76,175,80,0.07);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .pillar-card:hover, .pillar-card:focus {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 8px 24px rgba(76,175,80,0.12);
+      outline: var(--focus-outline);
+    }
+    .pillar-icon {
+      font-size: 2.5rem;
+      color: var(--primary-green);
+      margin-bottom: 1rem;
+    }
+    .pillar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--accent-gold);
+      margin-bottom: 0.5rem;
+    }
+    .pillar-desc {
+      font-size: 1rem;
+      color: #444;
+    }
+
+    /* Impact Metrics Section */
+    .impact-metrics {
+      background: linear-gradient(120deg, #E0E5E2 0%, #F5F5F5 100%);
+      border-radius: 24px;
+      padding: 3rem 2rem;
+      margin: 3rem 0;
+      box-shadow: 0 2px 8px rgba(76,175,80,0.07);
+      text-align: center;
+    }
+    .metrics-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--primary-green);
+      margin-bottom: 1rem;
+    }
+    .metrics-graph {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+      align-items: flex-end;
+      margin-top: 2rem;
+    }
+    .metric-bar {
+      flex: 1 1 120px;
+      min-width: 120px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem 1rem;
+      box-shadow: 0 2px 8px rgba(76,175,80,0.07);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 1s cubic-bezier(.6,.2,.1,1) both;
+    }
+    .metric-bar .bar {
+      width: 36px;
+      height: 0;
+      background: linear-gradient(180deg, var(--primary-green) 60%, var(--accent-gold) 100%);
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 1rem;
+      transition: height 1.2s cubic-bezier(.6,.2,.1,1);
+    }
+    .metric-bar .metric-value {
+      font-size: 1.4rem;
+      color: var(--primary-green);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .metric-bar .metric-label {
+      font-size: 1rem;
+      color: #444;
+      text-align: center;
+    }
+
+    /* Co-Founders Section */
+    .founders-section {
+      background: #fff;
+      border-radius: 24px;
+      padding: 3rem 2rem;
+      margin: 3rem 0;
+      box-shadow: 0 2px 8px rgba(76,175,80,0.07);
+      text-align: center;
+    }
+    .founders-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--primary-green);
+      margin-bottom: 1rem;
+    }
+    .founders-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+    .founder-card {
+      flex: 1 1 300px;
+      min-width: 260px;
+      background: var(--neutral-light);
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      text-align: left;
+      box-shadow: 0 2px 8px rgba(76,175,80,0.07);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .founder-card:hover, .founder-card:focus {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 8px 24px rgba(76,175,80,0.12);
+      outline: var(--focus-outline);
+    }
+    .founder-photo {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 1rem;
+      border: 3px solid var(--primary-green);
+    }
+    .founder-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--primary-green);
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .founder-title {
+      color: var(--accent-gold);
+      font-size: 1rem;
+      margin-bottom: 0.7rem;
+    }
+    .founder-bio {
+      font-size: 1rem;
+      color: #444;
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+    .founder-quote {
+      font-style: italic;
+      color: #555;
+      margin: 1rem 0;
+      text-align: center;
+    }
+    .founder-contact {
+      color: var(--primary-green);
+      text-decoration: underline;
+      font-size: 0.95rem;
+      margin-top: auto;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--neutral-light);
+      color: #444;
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.95rem;
+      border-top: 1px solid #e0e0e0;
+    }
+    .footer-links {
+      margin-bottom: 1rem;
+    }
+    .footer-links a {
+      color: var(--primary-green);
+      text-decoration: none;
+      margin: 0 1rem;
+      font-weight: 600;
+    }
+    .footer-links a:hover, .footer-links a:focus {
+      text-decoration: underline;
+      outline: var(--focus-outline);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .mission-content, .pillars, .metrics-graph, .founders-cards {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .nav-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 2rem; }
+      .section-title, .metrics-title, .founders-title { font-size: 1.3rem; }
+      .section, .impact-metrics, .founders-section { padding: 2rem 1rem; }
+    }
+    /* Accessibility: reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <a href="#" class="logo" aria-label="BZSF Home">BZSF</a>
+      <nav aria-label="Main navigation">
+        <ul>
+          <li><a href="#mission">Mission</a></li>
+          <li><a href="#pillars">Pillars</a></li>
+          <li><a href="#impact">Impact</a></li>
+          <li><a href="#founders">Leadership</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <button class="cta-btn" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Request Consultation</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero" aria-label="Hero section">
+      <h1>Invest with Innovation &amp; Impact</h1>
+      <div class="animated-keywords" id="animated-keywords" aria-live="polite"></div>
+      <p>
+        BZSF empowers discerning investors to achieve exceptional, profit-driven returns while advancing ethics and environmental stewardship. 
+      </p>
+      <button class="cta-btn" onclick="document.getElementById('mission').scrollIntoView({behavior:'smooth'})">Explore Our Mission</button>
+    </section>
+
+    <!-- Mission & ESG Section -->
+    <section class="section" id="mission" aria-labelledby="mission-title">
+      <h2 class="section-title" id="mission-title">Our Mission</h2>
+      <div class="section-subtitle">Purpose-Driven, Performance-Focused</div>
+      <div class="mission-content">
+        <div class="mission-text">
+          <p>
+            At BZSF, our mission is to redefine wealth creation for a sustainable future. We believe that financial excellence and positive global impact are not mutually exclusive—they are mutually reinforcing. Our strategies are meticulously crafted to deliver superior returns and profits while upholding the highest standards of ethics and environmental responsibility.
+          </p>
+          <p>
+            We partner with clients who demand more from their capital &mdash; transparency, innovation, and a legacy of positive change.
+          </p>
+        </div>
+        <div class="esg-explainer" aria-label="What is ESG Investing?">
+          <h3>What is ESG Investing?</h3>
+          <ul>
+            <li><strong>Environmental:</strong> Investing in companies and projects that reduce carbon emissions, conserve resources, and protect natural ecosystems.</li>
+            <li><strong>Social:</strong> Supporting organizations that champion diversity, human rights, and community well-being.</li>
+            <li><strong>Governance:</strong> Prioritizing transparency, ethical leadership, and accountability at every level.</li>
+          </ul>
+          <p style="margin-top:1rem;font-size:0.95rem;color:#666;">
+            ESG investing aligns your portfolio with your values—without compromising on performance.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pillars Section -->
+    <section class="section" id="pillars" aria-labelledby="pillars-title">
+      <h2 class="section-title" id="pillars-title">Our Three Investment Pillars</h2>
+      <div class="section-subtitle">Profit &bull; Ethics &bull; Environment</div>
+      <ul class="pillars">
+        <li class="pillar-card" tabindex="0">
+          <div class="pillar-icon" aria-hidden="true">&#128176;</div>
+          <div class="pillar-title">Profit</div>
+          <div class="pillar-desc">
+            We deliver market-leading, profit-driven returns through rigorous analysis and active management. Our approach proves that sustainability and profitability go hand in hand.
+          </div>
+        </li>
+        <li class="pillar-card" tabindex="0">
+          <div class="pillar-icon" aria-hidden="true">&#128161;</div>
+          <div class="pillar-title">Ethics</div>
+          <div class="pillar-desc">
+            Every investment is screened for integrity and fairness. We champion companies with transparent governance, fair labor practices, and a commitment to social good.
+          </div>
+        </li>
+        <li class="pillar-card" tabindex="0">
+          <div class="pillar-icon" aria-hidden="true">&#127793;</div>
+          <div class="pillar-title">Environment</div>
+          <div class="pillar-desc">
+            Our portfolios prioritize environmental stewardship—reducing carbon footprints, supporting renewables, and funding innovations that restore our planet.
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Impact Metrics Section -->
+    <section class="impact-metrics" id="impact" aria-labelledby="impact-title">
+      <h2 class="metrics-title" id="impact-title">Our Impact in Numbers</h2>
+      <div class="metrics-graph" aria-label="Key ESG Metrics">
+        <div class="metric-bar" tabindex="0" aria-label="Carbon Reduction">
+          <div class="bar" style="height: 120px;" aria-hidden="true"></div>
+          <div class="metric-value">-42%</div>
+          <div class="metric-label">Portfolio Carbon Footprint<br><span style="font-size:0.9em;color:#888;">vs. Benchmark</span></div>
+        </div>
+        <div class="metric-bar" tabindex="0" aria-label="ESG Score">
+          <div class="bar" style="height: 100px;" aria-hidden="true"></div>
+          <div class="metric-value">AA+</div>
+          <div class="metric-label">Average ESG Score</div>
+        </div>
+        <div class="metric-bar" tabindex="0" aria-label="Diversity">
+          <div class="bar" style="height: 80px;" aria-hidden="true"></div>
+          <div class="metric-value">48%</div>
+          <div class="metric-label">Board Gender Diversity</div>
+        </div>
+        <div class="metric-bar" tabindex="0" aria-label="Impact Investments">
+          <div class="bar" style="height: 110px;" aria-hidden="true"></div>
+          <div class="metric-value">€1.2B</div>
+          <div class="metric-label">Allocated to Impact Projects</div>
+        </div>
+      </div>
+      <div style="margin-top:2rem;font-size:0.95rem;color:#666;">
+        <span>Data as of Q3 2025. Sources: World Bank, MSCI, BZSF internal analysis.</span>
+      </div>
+    </section>
+
+    <!-- Co-Founders Section -->
+    <section class="founders-section" id="founders" aria-labelledby="founders-title">
+      <h2 class="founders-title" id="founders-title">Meet Our Visionary Leadership</h2>
+      <div class="founders-cards">
+        <div class="founder-card" tabindex="0">
+          <img src="/assets/jake-nel.jpg" alt="Jake Nel, Innovation Officer" class="founder-photo" />
+          <div class="founder-name">Jake Nel</div>
+          <div class="founder-title">Innovation Officer</div>
+          <div class="founder-bio">
+            Jake Nel is our Innovation Officer and a market prodigy. A coding aficionado, he’s built and traded multiple high-performance portfolios with record-setting returns across forex, crypto, and options. With deep expertise in biotechnology and startups, Jake drives BZSF’s cutting-edge, profit-focused strategies while remaining deeply committed to environmental sustainability.
+          </div>
+          <a href="mailto:jake.nel@bzsf.com" class="founder-contact" aria-label="Contact Jake Nel">Contact Jake</a>
+        </div>
+        <div class="founder-card" tabindex="0">
+          <img src="/assets/clarence-van-marle.jpg" alt="Clarence van Marle, Chief Portfolio Manager" class="founder-photo" />
+          <div class="founder-name">Clarence van Marle</div>
+          <div class="founder-title">Chief Portfolio Manager</div>
+          <div class="founder-bio">
+            Clarence van Marle leads portfolio management with a visionary long-term focus. An expert in politics, governance, and economics, he ensures rigorous ethical oversight and diversification. Under his disciplined leadership, a previous portfolio delivered a 48% annual return. Now Clarence pioneers strategies to maximize profits through diversified, sustainable investments.
+          </div>
+          <div class="founder-quote">
+            “Imagine if magnifying our positive impact on the economy could simultaneously maximize our profits.”
+          </div>
+          <a href="mailto:clarence.vanmarle@bzsf.com" class="founder-contact" aria-label="Contact Clarence van Marle">Contact Clarence</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section" id="contact" aria-labelledby="contact-title">
+      <h2 class="section-title" id="contact-title">Connect with BZSF</h2>
+      <div class="section-subtitle">Your journey to impactful investing starts here.</div>
+      <form style="max-width:500px;margin:2rem auto 0 auto;background:#fff;padding:2rem;border-radius:16px;box-shadow:0 2px 8px rgba(76,175,80,0.07);" aria-label="Contact form">
+        <label for="name" style="display:block;font-weight:600;margin-bottom:0.5rem;">Name</label>
+        <input id="name" name="name" type="text" required placeholder="Your Name" style="width:100%;padding:0.75rem;margin-bottom:1rem;border-radius:8px;border:1px solid #ccc;font-size:1rem;">
+        <label for="email" style="display:block;font-weight:600;margin-bottom:0.5rem;">Email</label>
+        <input id="email" name="email" type="email" required placeholder="Your Email" style="width:100%;padding:0.75rem;margin-bottom:1rem;border-radius:8px;border:1px solid #ccc;font-size:1rem;">
+        <label for="message" style="display:block;font-weight:600;margin-bottom:0.5rem;">Message</label>
+        <textarea id="message" name="message" rows="4" required placeholder="How can we help you?" style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid #ccc;font-size:1rem;margin-bottom:1rem;"></textarea>
+        <button type="submit" class="cta-btn" style="width:100%;">Submit Inquiry</button>
+        <div style="font-size:0.9rem;color:#888;margin-top:1rem;">
+          By submitting, you consent to our <a href="/privacy" style="color:var(--primary-green);text-decoration:underline;">privacy policy</a>.
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-links">
+      <a href="/privacy">Privacy Policy</a> | 
+      <a href="/terms">Terms of Service</a> | 
+      <a href="/accessibility">Accessibility</a>
+    </div>
+    <div>
+      &copy; 2025 BZSF ESG Investments. All rights reserved. | SFDR, FCA, and GDPR compliant.
+    </div>
+    <div style="margin-top:0.5rem;font-size:0.9rem;">
+      <span aria-label="Eco-friendly hosting">🌱</span> Hosted on 100% renewable energy.
+    </div>
+  </footer>
+
+  <!-- Accessibility: Skip to content link -->
+  <a href="#mission" style="position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden;" tabindex="0" id="skip-link">Skip to main content</a>
+
+  <!-- Animated keywords script -->
+  <script>
+    const keywords = [
+      "Sustainable Growth",
+      "Ethical Leadership",
+      "Market Innovation",
+      "High Returns",
+      "Transparency",
+      "Legacy"
+    ];
+    let kwIndex = 0;
+    function animateKeywords() {
+      const el = document.getElementById('animated-keywords');
+      if (!el) return;
+      el.textContent = keywords[kwIndex];
+      kwIndex = (kwIndex + 1) % keywords.length;
+      setTimeout(animateKeywords, 1800);
+    }
+    animateKeywords();
+
+    // Animate metric bars on scroll
+    function animateBars() {
+      document.querySelectorAll('.metric-bar .bar').forEach((bar, i) => {
+        setTimeout(() => {
+          const label = bar.parentElement.getAttribute('aria-label');
+          if (label === "Carbon Reduction") {
+            bar.style.height = "120px";
+          } else if (label === "ESG Score") {
+            bar.style.height = "100px";
+          } else if (label === "Diversity") {
+            bar.style.height = "80px";
+          } else if (label === "Impact Investments") {
+            bar.style.height = "110px";
+          }
+        }, 400 + i * 200);
+      });
+    }
+    window.addEventListener('DOMContentLoaded', animateBars);
+  </script>
+</body>
+</html>
