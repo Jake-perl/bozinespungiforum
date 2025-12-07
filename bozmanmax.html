@@ -337,7 +337,7 @@ function update(dt){
     for(const b of state.blocks){ if(b.owner!=='player'){ const d=Math.hypot(b.x-u.x,b.y-u.y); if(d<best){best=d;target=b;} } }
     if(target){
       const vx=target.x-u.x, vy=target.y-u.y, d=Math.hypot(vx,vy)||1;
-      if(d>18){ u.x += (vx/d)*u.speed; u.y += (vy/d)*u.speed; } else { if(target.hp!==undefined) target.hp -= u.atk * (dt/700); }
+      if(d>18){ u.x += (vx/d)*u.speed; u.y += (vy/d)*u.speed; } else { if(target.hp!==undefined) target.hp -= u.atk * (dt/100); }
     } else { u.x += rand(-0.4,0.4); u.y += rand(-0.4,0.4); }
   }
 
