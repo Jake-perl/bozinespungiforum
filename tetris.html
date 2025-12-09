@@ -1,0 +1,258 @@
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <title>Tetris - Bozinespungiforum</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      margin: 0;
+      background: #222;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+    #game-container {
+      display: flex;
+      margin-top: 20px;
+    }
+    canvas {
+      background: #111;
+      border: 2px solid #555;
+    }
+    #info {
+      margin-left: 30px;
+    }
+    h1, #score, #level {
+      margin: 5px 0;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: #ffcc00;
+      color: black;
+      transition: background 0.2s ease;
+    }
+    button:hover {
+      background: #ffaa00;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div>
+      <canvas id="game" width="240" height="400"></canvas>
+      <h2 id="score">Score: 0</h2>
+      <h2 id="level">Level: 1</h2>
+      <button onclick="window.location.href='options.html'">Back to Options</button>
+    </div>
+    <div id="info">
+      <h2>Controls</h2>
+      <ul>
+        <li>⬅️ Left Arrow: Move Left</li>
+        <li>➡️ Right Arrow: Move Right</li>
+        <li>⬆️ Up Arrow: Rotate</li>
+        <li>⬇️ Down Arrow: Fast Drop</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const gridSize = 20;
+    const cols = canvas.width / gridSize;
+    const rows = canvas.height / gridSize;
+
+    const shapes = [
+      [[1,1,1,1]],          // Line
+      [[1,1],[1,1]],        // Square
+      [[0,1,0],[1,1,1]],    // T
+      [[1,1,0],[0,1,1]],    // Z
+      [[0,1,1],[1,1,0]],    // S
+      [[1,0,0],[1,1,1]],    // L
+      [[0,0,1],[1,1,1]]     // J
+    ];
+
+    const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#F3FF33','#FF8C33','#33FFF2'];
+
+    let board = Array.from({length: rows}, () => Array(cols).fill(0));
+    let score = 0;
+    let level = 1;
+    let dropInterval = 500;
+    const scoreDisplay = document.getElementById('score');
+    const levelDisplay = document.getElementById('level');
+
+    function drawBoard() {
+      ctx.fillStyle = '#111';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      for (let r=0; r<rows; r++){
+        for (let c=0; c<cols; c++){
+          if (board[r][c]){
+            ctx.fillStyle = board[r][c];
+            ctx.fillRect(c*gridSize, r*gridSize, gridSize, gridSize);
+            ctx.strokeStyle = '#000';
+            ctx.strokeRect(c*gridSize, r*gridSize, gridSize, gridSize);
+          }
+        }
+      }
+    }
+
+    let current = {
+      shape: shapes[Math.floor(Math.random()*shapes.length)],
+      color: colors[Math.floor(Math.random()*colors.length)],
+      x: 3,
+      y: 0
+    };
+
+    function drawBlock() {
+      current.shape.forEach((row,i)=>{
+        row.forEach((val,j)=>{
+          if(val){
+            ctx.fillStyle = current.color;
+            ctx.fillRect((current.x+j)*gridSize, (current.y+i)*gridSize, gridSize, gridSize);
+            ctx.strokeStyle = '#000';
+            ctx.strokeRect((current.x+j)*gridSize, (current.y+i)*gridSize, gridSize, gridSize);
+          }
+        });
+      });
+    }
+
+    function collision(xOffset=0, yOffset=0, shape=current.shape) {
+      return shape.some((row,i)=>{
+        return row.some((val,j)=>{
+          if(val){
+            let x = current.x + j + xOffset;
+            let y = current.y + i + yOffset;
+            return y>=rows || x<0 || x>=cols || board[y][x];
+          }
+          return false;
+        });
+      });
+    }
+
+    function merge() {
+      current.shape.forEach((row,i)=>{
+        row.forEach((val,j)=>{
+          if(val) board[current.y+i][current.x+j] = current.color;
+        });
+      });
+    }
+
+    function removeFullRows() {
+      let linesCleared = 0;
+      board = board.filter(row=>{
+        if(row.every(cell=>cell)){
+          linesCleared++;
+          return false;
+        }
+        return true;
+      });
+      while(board.length<rows) board.unshift(Array(cols).fill(0));
+      if(linesCleared>0){
+        score += linesCleared * 10;
+        scoreDisplay.textContent = `Score: ${score}`;
+        // Increase level every 50 points
+        level = Math.floor(score / 50) + 1;
+        levelDisplay.textContent = `Level: ${level}`;
+        dropInterval = 500 - (level-1)*50; // speed up
+      }
+    }
+
+    function rotate() {
+      const newShape = current.shape[0].map((_,i)=>current.shape.map(row=>row[i])).reverse();
+      if(!collision(0,0,newShape)) current.shape = newShape;
+    }
+
+function removeFullRows() {
+  let linesCleared = 0;
+  board = board.filter(row => {
+    if(row.every(cell => cell)) {
+      linesCleared++;
+      return false; // remove full row
+    }
+    return true;
+  });
+
+  while(board.length < rows) board.unshift(Array(cols).fill(0));
+
+  if(linesCleared > 0){
+    score += linesCleared * 10;
+
+    // --- Special chance bonuses ---
+    for(let i = 0; i < linesCleared; i++){
+      const rand = Math.random() * 100; // 0-100
+      if(rand < 1){ // 1% chance for full row bonus
+        score += 50;
+        console.log("🎉 Full row bonus!");
+      } else if(rand < 3){ // next 2% chance
+        score += 20;
+        console.log("✨ Half row bonus!");
+      } else if(rand < 6){ // 3% chance single block bonus
+        score += 5;
+        console.log("💎 Single block bonus!");
+      } else if(rand < 11){ // 5% combo bonus
+        score += 15;
+        console.log("⚡ Combo bonus!");
+      }
+    }
+
+    scoreDisplay.textContent = `Score: ${score}`;
+
+    // Level & speed update
+    level = Math.floor(score / 50) + 1;
+    levelDisplay.textContent = `Level: ${level}`;
+    dropInterval = 500 - (level-1) * 50; // faster with higher level
+  }
+}
+
+function drop() {
+  if(!collision(0, 1)){
+    current.y++;
+  } else {
+    merge();
+    removeFullRows(); // calls the updated function with bonuses
+    current = {
+      shape: shapes[Math.floor(Math.random()*shapes.length)],
+      color: colors[Math.floor(Math.random()*colors.length)],
+      x: 3,
+      y: 0
+    };
+    if(collision()){
+      alert(`Game Over! Final Score: ${score}`);
+      board = Array.from({length: rows}, () => Array(cols).fill(0));
+      score = 0;
+      level = 1;
+      dropInterval = 500;
+      scoreDisplay.textContent = `Score: ${score}`;
+      levelDisplay.textContent = `Level: ${level}`;
+    }
+  }
+  drawBoard();
+  drawBlock();
+}
+
+
+    document.addEventListener('keydown', e=>{
+      if(e.key==='ArrowLeft' && !collision(-1,0)) current.x--;
+      if(e.key==='ArrowRight' && !collision(1,0)) current.x++;
+      if(e.key==='ArrowDown') drop();
+      if(e.key==='ArrowUp') rotate();
+      drawBoard();
+      drawBlock();
+    });
+
+    function gameLoop(){
+      drop();
+      setTimeout(gameLoop, dropInterval);
+    }
+
+    gameLoop();
+  </script>
+<!-- Cloudflare Pages Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;7c984c6d642a41ca84f15f40b3165c5e&quot;}"></script><!-- Cloudflare Pages Analytics -->
+
+</body></html>
