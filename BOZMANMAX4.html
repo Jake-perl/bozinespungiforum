@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>BOZ man max — Fixed</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root{--panel:rgba(0,0,0,0.6);--accent:#ffcc00}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#fff;background:#07101a}
+  #wrap{display:flex;align-items:center;justify-content:center;height:100vh}
+  canvas{display:block;background:transparent;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+  .panel{position:fixed;padding:10px;border-radius:10px;background:var(--panel);backdrop-filter: blur(4px)}
+  #ui{left:12px;top:12px;width:320px}
+  #buildMenu{left:12px;bottom:12px;width:360px;display:flex;gap:8px;flex-wrap:wrap}
+  .buildBtn{flex:1;padding:8px;border-radius:8px;border:0;background:#333;color:#fff;cursor:pointer}
+  .buildBtn.active{outline:3px solid rgba(255,204,0,0.6)}
+  #minimap{right:12px;bottom:12px;width:200px;height:140px}
+  #wavePanel{right:12px;top:12px;width:260px;text-align:right}
+  #loadingScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(3,3,10,0.95), rgba(3,3,10,0.85));z-index:60}
+  #rules{width:820px;max-width:96%;background:linear-gradient(180deg,#0b1220,#07101a);padding:20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+  #deathOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:70}
+  #deathCard{background:#111;padding:18px;border-radius:10px;text-align:center;width:420px}
+  #pauseOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:65;pointer-events:none}
+  #pauseBadge{background:rgba(0,0,0,0.55);padding:10px 16px;border-radius:8px;border:2px solid rgba(255,204,0,0.12);font-weight:700}
+  button{appearance:none;border:0;padding:8px 12px;border-radius:8px;background:var(--accent);color:#111;font-weight:600;cursor:pointer}
+  small{opacity:0.9}
+  @media (max-width:900px){#ui{width:260px}#buildMenu{width:92%;left:4%}}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="game" width="1152" height="720"></canvas></div>
+
+<div id="ui" class="panel">
+  <b>BOZ man max</b>
+  <div>Wood: <span id="wood">0</span></div>
+  <div>HP: <span id="hp">100</span></div>
+  <div>Selected: <span id="selected">None</span></div>
+  <div style="margin-top:8px"><small>Move: WASD / Arrows • Click to build • Press 1 to spawn unit • S to sprint</small></div>
+  <div style="margin-top:8px;display:flex;gap:8px">
+    <button id="pauseBtn">Pause</button>
+    <button id="hardBtn">Harder</button>
+  </div>
+  <div style="margin-top:8px">Sprint: <span id="sprintStatus">Ready</span></div>
+</div>
+
+<div id="buildMenu" class="panel"></div>
+<div id="minimap" class="panel"></div>
+<div id="wavePanel" class="panel">
+  <div><b>Wave Progress</b></div>
+  <div>Group: <span id="waveGroupName">—</span></div>
+  <div>Wave in Group: <span id="waveNum">0</span> / 10</div>
+  <div>Total Wave: <span id="waveTotal">0</span> / 50</div>
+  <div>Next in: <span id="waveTimer">--</span>s</div>
+</div>
+
+<div id="loadingScreen">
+  <div id="rules">
+    <h1>BOZ man max — How to play</h1>
+    <p>Build and defend. Each group = 10 waves. Sprint (S) lasts 10s, 30s cooldown. On death you restart at the beginning of current group.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
+      <button id="startBtn">Start Game</button>
+    </div>
+  </div>
+</div>
+
+<div id="deathOverlay">
+  <div id="deathCard">
+    <h2>You died</h2>
+    <p id="deathMsg">You were defeated.</p>
+    <div style="margin-top:12px">
+      <button id="respawnBtn">Respawn</button>
+    </div>
+  </div>
+</div>
+
+<div id="pauseOverlay">
+  <div id="pauseBadge">PAUSED</div>
+</div>
+
+<script>
+/* ---------- CLEAN, STABLE SINGLE-FILE GAME ---------- */
+/* Important: this is a deliberately robust, simplified engine that
+   keeps the requested features but removes fragile complexity. */
+
+// ---------- CONFIG ----------
+const CONFIG = {
+  worldW: 2400, worldH: 1600,
+  playerSpeed: 3.6,
+  gatherPerSecond: 3,
+  gatherRange: 48,
+  buildRange: 260,
+  sprintDuration: 10000, // ms
+  sprintCooldown: 30000, // ms
+  sprintMultiplier: 2.2,
+  wavesPerGroup: 10,
+  groupsCount: 5
+};
+
+// ---------- DOM & CANVAS ----------
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const mmCanvas = document.createElement('canvas'); mmCanvas.width = 200; mmCanvas.height = 140; mmCanvas.style.width='100%'; mmCanvas.style.height='100%';
+document.getElementById('minimap').appendChild(mmCanvas);
+const mmCtx = mmCanvas.getContext('2d');
+
+const woodEl = document.getElementById('wood'), hpEl = document.getElementById('hp'), selectedEl = document.getElementById('selected');
+const waveGroupNameEl = document.getElementById('waveGroupName'), waveNumEl = document.getElementById('waveNum'), waveTotalEl = document.getElementById('waveTotal'), waveTimerEl = document.getElementById('waveTimer');
+const sprintStatusEl = document.getElementById('sprintStatus');
+
+// ---------- GROUPS ----------
+const GROUPS = [
+  { name:'Verdant Vanguard', subtitle:'Forest Frenzy', bgTop:'#b9f2c6', bgBottom:'#4fa26a' },
+  { name:'Molten Legion', subtitle:'Volcanic Onslaught', bgTop:'#ffb07c', bgBottom:'#8b2b0b' },
+  { name:'Aqua Armada', subtitle:'Tidal Terrors', bgTop:'#9fd8ff', bgBottom:'#2b6f8f' },
+  { name:'Shadow Phalanx', subtitle:'Twilight Incursion', bgTop:'#b59bff', bgBottom:'#2b1030' },
+  { name:'Celestial Overlords', subtitle:'Astral Apocalypse', bgTop:'#ffd9b3', bgBottom:'#3a0b3a' }
+];
+
+// ---------- STRUCTURES ----------
+const STRUCTURES = {
+  wall: { name:'Wall', cost:10, w:44, h:44, hp:220 },
+  tower: { name:'Tower', cost:22, w:52, h:52, hp:420, range:160, fireRate:1100, dmg:28, knockback:6 },
+  turret: { name:'Turret', cost:30, w:48, h:48, hp:200, range:160, fireRate:900, dmg:18 },
+  mill: { name:'Lumber Mill', cost:25, w:56, h:56, hp:180, producePerSec:1.2 }
+};
+
+// ---------- ENEMY PROTOTYPES ----------
+const ENEMY_PROTOS = {
+  // group1
+  forest_archer: { id:'forest_archer', hp:50, atk:8, speed:1.2, color:'#2d7a2d', size:10, role:'ranged' },
+  sapling_beetle: { id:'sapling_beetle', hp:30, atk:4, speed:1.5, color:'#8bc34a', size:8, role:'fast' },
+  woodland_golem: { id:'woodland_golem', hp:100, atk:15, speed:0.7, color:'#6b4226', size:18, role:'tank' },
+  // group2
+  flame_imp: { id:'flame_imp', hp:60, atk:10, speed:1.4, color:'#ff6f3c', size:10, role:'suicide' },
+  magma_golem: { id:'magma_golem', hp:200, atk:20, speed:0.5, color:'#a3441b', size:22, role:'tank' },
+  phoenix_whelp: { id:'phoenix_whelp', hp:80, atk:12, speed:1.6, color:'#ffb347', size:12, role:'flying' },
+  // group3
+  ice_shaman: { id:'ice_shaman', hp:70, atk:10, speed:1.0, color:'#88d9ff', size:12, role:'caster' },
+  tide_drake: { id:'tide_drake', hp:150, atk:18, speed:1.0, color:'#2ea6c7', size:18, role:'ranged_arc' },
+  storm_sentry: { id:'storm_sentry', hp:50, atk:6, speed:2.0, color:'#d2f0ff', size:10, role:'disabler' },
+  // group4
+  death_knight: { id:'death_knight', hp:180, atk:22, speed:0.8, color:'#5b2f6a', size:18, role:'phalanx' },
+  wraith_specter: { id:'wraith_specter', hp:60, atk:15, speed:1.8, color:'#9aa2ff', size:10, role:'phasing' },
+  grave_caster: { id:'grave_caster', hp:90, atk:0, speed:0.9, color:'#8b7a8b', size:14, role:'summoner' },
+  skeleton_warrior: { id:'skeleton_warrior', hp:40, atk:8, speed:1.4, color:'#bdbdbd', size:9, role:'minion' },
+  // group5
+  dragon_overlord: { id:'dragon_overlord', hp:500, atk:35, speed:1.0, color:'#b06bff', size:28, role:'boss' },
+  astral_titan: { id:'astral_titan', hp:250, atk:28, speed:0.7, color:'#ffcc66', size:22, role:'siege' },
+  void_phantom: { id:'void_phantom', hp:120, atk:20, speed:2.0, color:'#66ffff', size:12, role:'teleport' }
+};
+
+// ---------- WORLD & STATE ----------
+const state = {
+  player: { x: CONFIG.worldW/2, y: CONFIG.worldH/2, r:14, hp:100, wood:30, alive:true, slowUntil:0 },
+  keys: {},
+  trees: [],
+  blocks: [],
+  units: [],
+  enemies: [],
+  projectiles: [],
+  lavaPools: [],
+  outposts: [],
+  wave: { total:0, groupIndex:0, waveInGroup:0, queue:[], active:false, intermission:3, spawnTimer:0 },
+  paused: false,
+  hardMode: false,
+  sprint: { active:false, left:0, cooldown:0 }
+};
+
+// populate trees
+for(let i=0;i<60;i++) state.trees.push({ x: rand(60, CONFIG.worldW-60), y: rand(60, CONFIG.worldH-60), wood:40 });
+
+// ---------- HELPERS ----------
+function rand(min,max){ return Math.random()*(max-min)+min; }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function distXY(ax,ay,bx,by){ return Math.hypot(ax-bx,ay-by); }
+function camera(){ const p=state.player; return { x: clamp(p.x - canvas.width/2, 0, CONFIG.worldW - canvas.width), y: clamp(p.y - canvas.height/2, 0, CONFIG.worldH - canvas.height) }; }
+
+// ---------- BUILD MENU ----------
+function makeBuildButtons(){
+  const menu = document.getElementById('buildMenu');
+  for(const k in STRUCTURES){
+    const s = STRUCTURES[k];
+    const btn = document.createElement('button');
+    btn.className='buildBtn'; btn.innerHTML = `${s.name}<br><small>Cost: ${s.cost}</small>`;
+    btn.onclick = () => {
+      if(state.selectedBuild === k){ state.selectedBuild = null; btn.classList.remove('active'); selectedEl.textContent='None'; return; }
+      state.selectedBuild = k; selectedEl.textContent = s.name;
+      document.querySelectorAll('.buildBtn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+    };
+    menu.appendChild(btn);
+  }
+}
+makeBuildButtons();
+
+// ---------- INPUT ----------
+window.addEventListener('keydown', e => {
+  state.keys[e.key.toLowerCase()] = true;
+  if((e.key === 's' || e.key === 'S' || e.key === 'Shift') && !e.repeat){
+    if(!state.sprint.active && state.sprint.cooldown <= 0){
+      state.sprint.active = true; state.sprint.left = CONFIG.sprintDuration; state.sprint.cooldown = 0;
+    }
+  }
+});
+window.addEventListener('keyup', e => { state.keys[e.key.toLowerCase()] = false; });
+
+canvas.addEventListener('click', e => {
+  if(!state.player.alive || state.paused) return;
+  const rect = canvas.getBoundingClientRect();
+  const cam = camera();
+  const wx = cam.x + (e.clientX - rect.left), wy = cam.y + (e.clientY - rect.top);
+  if(state.selectedBuild) placeStructure(state.selectedBuild, wx, wy);
+});
+window.addEventListener('keypress', e => { if(e.key === '1') spawnUnit(); });
+
+document.getElementById('pauseBtn').addEventListener('click', ()=>{ togglePause(); });
+document.getElementById('hardBtn').addEventListener('click', ()=>{ state.hardMode = !state.hardMode; document.getElementById('hardBtn').textContent = state.hardMode ? 'Harder ✓' : 'Harder'; });
+
+// ---------- STRUCTURE ACTIONS ----------
+function placeStructure(key, wx, wy){
+  const s = STRUCTURES[key]; if(!s) return;
+  if(state.player.wood < s.cost) return;
+  if(distXY(state.player.x,state.player.y, wx,wy) > CONFIG.buildRange) return;
+  // overlap check
+  for(const b of state.blocks) if(Math.abs(b.x - wx) < (b.w/2 + s.w/2) && Math.abs(b.y - wy) < (b.h/2 + s.h/2)) return;
+  state.blocks.push({ id:'b'+Date.now()+Math.random(), type:key, x:wx, y:wy, w:s.w, h:s.h, hp:s.hp, owner:'player', lastFire:0, produce:0, disabled:0, onFire:0, frozen:0 });
+  state.player.wood -= s.cost;
+}
+
+function spawnUnit(){
+  if(state.player.wood < 15) return;
+  state.player.wood -= 15;
+  state.units.push({ x: state.player.x + rand(-30,30), y: state.player.y + rand(-30,30), hp:70, atk:9, speed:1.6 });
+}
+
+// ---------- ENEMY & SPAWNING UTIL ----------
+function makeEnemy(typeId){
+  const proto = ENEMY_PROTOS[typeId];
+  if(!proto) return null;
+  const e = {
+    id: proto.id + '_' + Math.floor(Math.random()*999999),
+    type: proto.id,
+    hp: proto.hp,
+    maxHp: proto.hp,
+    atk: proto.atk || 0,
+    speed: proto.speed || 1,
+    color: proto.color,
+    size: proto.size || 12,
+    role: proto.role || 'basic',
+    x: 0, y: 0, timers: {}
+  };
+  return e;
+}
+function spawnEnemyAtEdge(typeId){
+  const e = makeEnemy(typeId); if(!e) return;
+  const side = Math.floor(rand(0,4));
+  if(side===0){ e.x = rand(20, CONFIG.worldW-20); e.y = -40; }
+  else if(side===1){ e.x = CONFIG.worldW + 40; e.y = rand(20, CONFIG.worldH-20); }
+  else if(side===2){ e.x = rand(20, CONFIG.worldW-20); e.y = CONFIG.worldH + 40; }
+  else { e.x = -40; e.y = rand(20, CONFIG.worldH-20); }
+  // scale by difficulty mildly
+  const scale = 1 + (state.wave.total * 0.12);
+  e.hp = Math.round(e.hp * scale); e.maxHp = e.hp; e.atk = Math.max(1, Math.round((e.atk||1)*scale));
+  state.enemies.push(e);
+}
+
+// ---------- WAVE QUEUE builder ----------
+function buildQueueForTotal(totalIndex){
+  const groupIdx = Math.floor((totalIndex-1) / CONFIG.wavesPerGroup);
+  const waveNum = ((totalIndex-1) % CONFIG.wavesPerGroup) + 1;
+  const q = [];
+  if(groupIdx === 0){
+    for(let i=0;i<4 + waveNum*2;i++) q.push('sapling_beetle');
+    for(let i=0;i<Math.floor(waveNum/2);i++) q.push('forest_archer');
+    if(waveNum>=6) q.push('woodland_golem');
+  } else if(groupIdx === 1){
+    for(let i=0;i<3 + waveNum*2;i++) q.push('flame_imp');
+    if(waveNum>=4) for(let i=0;i<Math.floor(waveNum/4);i++) q.push('magma_golem');
+    if(waveNum>=6) for(let i=0;i<Math.floor(waveNum/6);i++) q.push('phoenix_whelp');
+  } else if(groupIdx === 2){
+    for(let i=0;i<2 + Math.floor(waveNum*1.2);i++) q.push('storm_sentry');
+    if(waveNum>=4) for(let i=0;i<Math.floor(waveNum/3);i++) q.push('tide_drake');
+    if(waveNum>=5) for(let i=0;i<Math.floor(waveNum/4);i++) q.push('ice_shaman');
+  } else if(groupIdx === 3){
+    for(let i=0;i<2 + Math.floor(waveNum*1.1);i++) q.push('death_knight');
+    for(let i=0;i<1 + Math.floor(waveNum*0.9);i++) q.push('wraith_specter');
+    if(waveNum>=3) for(let i=0;i<Math.floor(waveNum/4);i++) q.push('grave_caster');
+  } else {
+    for(let i=0;i<2 + Math.floor(waveNum*0.8);i++) q.push('void_phantom');
+    if(waveNum>=5) for(let i=0;i<Math.floor(waveNum/5);i++) q.push('astral_titan');
+    if(waveNum>=9) q.push('dragon_overlord');
+  }
+  // shuffle
+  for(let i=q.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [q[i], q[j]] = [q[j], q[i]]; }
+  return q;
+}
+
+// ---------- SCHEDULING ----------
+function scheduleNextTotalWave(){
+  if(state.wave.total >= CONFIG.wavesPerGroup * CONFIG.groupsCount){
+    // victory
+    alert('Victory! You beat all groups!');
+    return;
+  }
+  state.wave.total++;
+  const tot = state.wave.total;
+  state.wave.groupIndex = Math.floor((tot-1)/CONFIG.wavesPerGroup);
+  state.wave.waveInGroup = ((tot-1)%CONFIG.wavesPerGroup)+1;
+  state.wave.queue = buildQueueForTotal(tot);
+  state.wave.active = true;
+  state.wave.spawnTimer = 0;
+  // UI & background
+  const g = GROUPS[state.wave.groupIndex];
+  document.body.style.background = `linear-gradient(${g.bgTop}, ${g.bgBottom})`;
+  waveGroupNameEl.textContent = `${g.name} — ${g.subtitle}`;
+  waveNumEl.textContent = state.wave.waveInGroup;
+  waveTotalEl.textContent = state.wave.total + ' / ' + (CONFIG.wavesPerGroup * CONFIG.groupsCount);
+}
+
+// spawn wave ticks: spawn some each tick to not flood
+function tickWaveSpawn(dt){
+  if(!state.wave.active) return;
+  state.wave.spawnTimer -= dt;
+  if(state.wave.spawnTimer <= 0){
+    // spawn a small burst
+    const burst = Math.min(6, Math.max(1, Math.ceil(state.wave.queue.length > 0 ? state.wave.queue.length / 6 : 0)));
+    for(let i=0;i<burst && state.wave.queue.length>0;i++){
+      const t = state.wave.queue.shift();
+      spawnEnemyAtEdge(t);
+    }
+    state.wave.spawnTimer = 200 + Math.random()*260;
+  }
+  // if finished
+  if(state.wave.queue.length === 0 && state.enemies.length === 0){
+    state.wave.active = false;
+    state.wave.intermission = 4 + Math.max(0, 6 - Math.floor(state.wave.waveInGroup/2));
+  }
+}
+
+// ---------- SIMPLE ENEMY AI & BEHAVIOR ----------
+function enemyAIStep(e, dt){
+  // dt in ms
+  // basic priorities: nearest block -> player
+  let bestTarget = null; let bestD = Infinity;
+  for(const b of state.blocks){
+    const d = distXY(e.x,e.y,b.x,b.y);
+    if(d < bestD){ bestD = d; bestTarget = b; }
+  }
+  const pd = distXY(e.x,e.y, state.player.x, state.player.y);
+  if(pd < bestD - 20){ bestTarget = state.player; bestD = pd; }
+
+  // role handling (kept deliberately small & safe)
+  if(e.role === 'suicide'){
+    // move quicker to player and explode on close
+    const tx = state.player.x, ty = state.player.y;
+    stepMoveTowards(e, tx, ty, e.speed * 1.4, dt);
+    if(distXY(e.x,e.y, tx, ty) < 20){
+      // small explosion
+      for(const en of state.enemies) if(distXY(en.x,en.y,e.x,e.y) < 40) en.hp -= 20;
+      // damage nearby blocks/player
+      for(const b of state.blocks) if(distXY(b.x,b.y, e.x,e.y) < 40) b.hp -= 40;
+      state.enemies = state.enemies.filter(x=>x !== e); // remove this imp
+      return;
+    }
+  } else if(e.role === 'flying'){
+    // ignore small obstacles, head to nearest structure or player
+    if(bestTarget) stepMoveTowards(e, bestTarget.x, bestTarget.y, e.speed * 1.2, dt);
+  } else if(e.role === 'ranged' || e.role === 'ranged_arc'){
+    // keep distance if player close
+    if(pd < 120){
+      // step away slightly
+      stepMoveAway(e, state.player.x, state.player.y, e.speed, dt);
+    } else {
+      if(bestTarget) stepMoveTowards(e, bestTarget.x, bestTarget.y, e.speed, dt);
+    }
+    // occasional projectile
+    e._shootTimer = (e._shootTimer || 0) - dt;
+    if(e._shootTimer <= 0){
+      e._shootTimer = 1500 + Math.random()*1200;
+      // shoot at player
+      spawnProjectile(e.x, e.y, state.player.x, state.player.y, e.atk || 8);
+    }
+  } else if(e.role === 'caster'){
+    e._cast = (e._cast || 0) - dt;
+    if(e._cast <= 0){
+      e._cast = 2400 + Math.random()*1200;
+      // slow effect near player if in range
+      if(distXY(e.x,e.y, state.player.x, state.player.y) < 220){
+        state.player.slowUntil = (state.player.slowUntil || 0) + 900;
+      }
+    }
+    if(bestTarget) stepMoveTowards(e, bestTarget.x, bestTarget.y, e.speed*0.6, dt);
+  } else if(e.role === 'phasing'){
+    // periodically toggle phased state
+    e._phaseTimer = (e._phaseTimer || 1000) - dt;
+    if(e._phaseTimer <= 0){ e._phaseTimer = 1200 + Math.random()*800; e._phased = !e._phased; }
+    if(bestTarget) stepMoveTowards(e, bestTarget.x, bestTarget.y, e.speed * (e._phased ? 1.4 : 1.0), dt);
+  } else if(e.role === 'summoner'){
+    e._summon = (e._summon || 1200) - dt;
+    if(e._summon <= 0){
+      e._summon = 2200 + Math.random()*1200;
+      // spawn a skeleton near caster
+      const sk = makeEnemy('skeleton_warrior');
+      sk.x = e.x + rand(-20,20); sk.y = e.y + rand(-20,20);
+      state.enemies.push(sk);
+    }
+  } else if(e.role === 'siege'){
+    // astral titan: create outpost once when close to center
+    if(!e._outpostBuilt && distXY(e.x,e.y, CONFIG.worldW/2, CONFIG.worldH/2) < 500){
+      e._outpostBuilt = true;
+      state.outposts.push({ id:'out'+Date.now(), x: e.x + rand(-40,40), y: e.y + rand(-40,40), hp:220, spawnTimer:0 });
+    }
+    if(bestTarget) stepMoveTowards(e, bestTarget.x, bestTarget.y, e.speed*0.6, dt);
+  } else if(e.role === 'teleport'){
+    e._tp = (e._tp || 2000) - dt;
+    if(e._tp <= 0){
+      e._tp = 1800 + Math.random()*1600;
+      // teleport near player
+      e.x = state.player.x + rand(-120,120);
+      e.y = state.player.y + rand(-120,120);
+    } else {
+      if(bestTarget) stepMoveTowards(e, bestTarget.x, bestTarget.y, e.speed*1.5, dt);
+    }
+  } else {
+    // default move to nearest target or player
+    if(bestTarget) stepMoveTowards(e, bestTarget.x, bestTarget.y, e.speed, dt);
+  }
+
+  // attack blocks if very close
+  if(bestTarget && bestTarget.type && distXY(e.x,e.y,bestTarget.x,bestTarget.y) < 22){
+    bestTarget.hp -= (e.atk || 1) * (dt/1000) * 30;
+  }
+  // attack player if close
+  if(distXY(e.x,e.y, state.player.x, state.player.y) < e.size + state.player.r + 2){
+    state.player.hp -= (e.atk || 1) * (dt/1000) * 12;
+  }
+}
+
+function stepMoveTowards(obj, tx, ty, speed, dt){
+  const dx = tx - obj.x, dy = ty - obj.y; const d = Math.hypot(dx,dy) || 1;
+  const m = (speed * (dt/1000)) * 60;
+  obj.x += (dx/d) * m; obj.y += (dy/d) * m;
+}
+function stepMoveAway(obj, tx, ty, speed, dt){
+  const dx = obj.x - tx, dy = obj.y - ty; const d = Math.hypot(dx,dy) || 1;
+  const m = (speed * (dt/1000)) * 60;
+  obj.x += (dx/d) * m; obj.y += (dy/d) * m;
+}
+
+// ---------- PROJECTILES ----------
+function spawnProjectile(sx,sy,tx,ty,dmg=10){
+  const dx = tx-sx, dy = ty-sy; const d = Math.hypot(dx,dy)||1;
+  state.projectiles.push({ x:sx, y:sy, vx:(dx/d)*280, vy:(dy/d)*280, life:2000, dmg });
+}
+function tickProjectiles(dt){
+  for(let i=state.projectiles.length-1;i>=0;i--){
+    const p = state.projectiles[i];
+    p.x += p.vx * (dt/1000); p.y += p.vy * (dt/1000); p.life -= dt;
+    // hit enemies
+    for(const e of state.enemies){
+      if(distXY(p.x,p.y,e.x,e.y) < (e.size || 12) + 4){ e.hp -= p.dmg; p.life = 0; break; }
+    }
+    if(p.life <= 0) state.projectiles.splice(i,1);
+  }
+}
+
+// ---------- LAVA POOLS ----------
+function createLavaPool(x,y,dur=5000){ state.lavaPools.push({ x,y, r:50, life:dur }); }
+function tickLava(dt){
+  for(let i=state.lavaPools.length-1;i>=0;i--){
+    const L = state.lavaPools[i]; L.life -= dt;
+    if(L.life <= 0) state.lavaPools.splice(i,1);
+    else {
+      if(distXY(L.x,L.y, state.player.x, state.player.y) < L.r) state.player.hp -= 6 * (dt/1000);
+      for(const b of state.blocks) if(distXY(L.x,L.y,b.x,b.y) < L.r + 12) b.hp -= 3 * (dt/1000);
+    }
+  }
+}
+
+// ---------- OUTPOSTS ----------
+function tickOutposts(dt){
+  for(const o of state.outposts){
+    o.spawnTimer = (o.spawnTimer || 0) + dt;
+    if(o.spawnTimer > 4500){
+      o.spawnTimer = 0;
+      // spawn a void phantom
+      const v = makeEnemy('void_phantom'); v.x = o.x + rand(-20,20); v.y = o.y + rand(-20,20); state.enemies.push(v);
+    }
+  }
+  // remove dead
+  state.outposts = state.outposts.filter(o=>o.hp>0);
+}
+
+// ---------- WAVE TICK ----------
+function tickWave(dt){
+  if(state.wave.active){
+    // spawn a few per interval
+    state.wave.spawnTimer -= dt;
+    if(state.wave.spawnTimer <= 0){
+      const burst = Math.min(6, Math.max(1, Math.ceil(state.wave.queue.length / 6)));
+      for(let i=0;i<burst && state.wave.queue.length>0;i++){
+        const t = state.wave.queue.shift();
+        spawnEnemyAtEdge(t);
+      }
+      state.wave.spawnTimer = 200 + Math.random()*200;
+    }
+    // if queue empty and no enemies -> wave ends
+    if(state.wave.queue.length === 0 && state.enemies.length === 0){
+      state.wave.active = false;
+      state.wave.intermission = 4 + Math.max(0, 6 - Math.floor(state.wave.waveInGroup/2));
+    }
+  } else {
+    // intermission countdown
+    state.wave.intermission -= dt/1000;
+    waveTimerEl.textContent = Math.max(0, Math.ceil(state.wave.intermission));
+    if(state.wave.intermission <= 0){
+      // schedule next total wave
+      if(state.wave.total >= CONFIG.wavesPerGroup * CONFIG.groupsCount){
+        alert('VICTORY!'); location.reload();
+      } else {
+        // start next
+        state.wave.total++;
+        const tot = state.wave.total;
+        state.wave.groupIndex = Math.floor((tot-1)/CONFIG.wavesPerGroup);
+        state.wave.waveInGroup = ((tot-1)%CONFIG.wavesPerGroup)+1;
+        state.wave.queue = buildQueueForTotal(tot);
+        state.wave.active = true; state.wave.spawnTimer = 0;
+        const g = GROUPS[state.wave.groupIndex];
+        document.body.style.background = `linear-gradient(${g.bgTop}, ${g.bgBottom})`;
+        waveGroupNameEl.textContent = `${g.name} — ${g.subtitle}`;
+        waveNumEl.textContent = state.wave.waveInGroup;
+        waveTotalEl.textContent = state.wave.total + ' / ' + (CONFIG.wavesPerGroup * CONFIG.groupsCount);
+      }
+    }
+  }
+}
+
+// ---------- SPRINT TICK ----------
+function tickSprint(dt){
+  if(state.sprint.active){
+    state.sprint.left -= dt;
+    if(state.sprint.left <= 0){ state.sprint.active = false; state.sprint.cooldown = CONFIG.sprintCooldown; state.sprint.left = 0; }
+  } else {
+    if(state.sprint.cooldown > 0){ state.sprint.cooldown -= dt; if(state.sprint.cooldown < 0) state.sprint.cooldown = 0; }
+  }
+  sprintStatusEl.textContent = state.sprint.active ? `Active (${Math.ceil(state.sprint.left/1000)}s)` : (state.sprint.cooldown>0 ? `Cooldown (${Math.ceil(state.sprint.cooldown/1000)}s)` : 'Ready');
+}
+
+// ---------- RESPAWN & DEATH ----------
+function showDeath(){ document.getElementById('deathMsg').textContent = `You died. Lost wood: ${Math.floor(state.player.wood*0.4)}.`; document.getElementById('deathOverlay').style.display='flex'; }
+document.getElementById('respawnBtn').addEventListener('click', ()=>{ respawnAtGroupStart(); document.getElementById('deathOverlay').style.display='none'; });
+
+function respawnAtGroupStart(){
+  // compute current group start total
+  const group = Math.floor((state.wave.total-1)/CONFIG.wavesPerGroup);
+  const startTotal = Math.max(0, group*CONFIG.wavesPerGroup);
+  state.wave.total = startTotal; // next intermission will start next wave
+  // reset enemies/outposts
+  state.enemies.length = 0; state.outposts.length = 0;
+  // respawn
+  state.player.x = CONFIG.worldW/2 + rand(-60,60); state.player.y = CONFIG.worldH/2 + rand(-60,60);
+  state.player.hp = 100; state.player.wood = Math.max(0, Math.floor(state.player.wood*0.6)); state.player.alive = true;
+  state.wave.active = false; state.wave.queue = []; state.wave.intermission = 2;
+}
+
+// ---------- MAIN LOOP ----------
+let last = performance.now();
+let running = false;
+
+function mainLoop(now){
+  const dt = Math.min(80, now - last); last = now;
+  if(!state.paused){
+    if(state.player.alive){
+      // movement
+      let dx=0, dy=0;
+      if(state.keys['w']||state.keys['arrowup']) dy -=1;
+      if(state.keys['s']||state.keys['arrowdown']) dy +=1;
+      if(state.keys['a']||state.keys['arrowleft']) dx -=1;
+      if(state.keys['d']||state.keys['arrowright']) dx +=1;
+      const len = Math.hypot(dx,dy) || 1;
+      let speed = CONFIG.playerSpeed;
+      if(state.sprint.active) speed *= CONFIG.sprintMultiplier;
+      if(state.player.slowUntil && state.player.slowUntil > 0){ speed *= 0.45; state.player.slowUntil -= dt; }
+      state.player.x += (dx/len) * speed * (dt/16);
+      state.player.y += (dy/len) * speed * (dt/16);
+      state.player.x = clamp(state.player.x,0,CONFIG.worldW); state.player.y = clamp(state.player.y,0,CONFIG.worldH);
+      // gather
+      let nearest=null, nd=1e9;
+      for(const t of state.trees) if(t.wood>0){ const d = distXY(t.x,t.y,state.player.x,state.player.y); if(d<nd){ nd=d; nearest=t; } }
+      if(nearest && nd <= CONFIG.gatherRange && Math.hypot(dx,dy) < 0.5){
+        state.gatherProgress = (state.gatherProgress || 0) + (CONFIG.gatherPerSecond * (dt/1000));
+        while(state.gatherProgress >= 1 && nearest.wood > 0){ state.player.wood++; nearest.wood--; state.gatherProgress--; }
+      } else state.gatherProgress = Math.max(0, (state.gatherProgress||0) - (dt/1000)*2);
+      // mills produce
+      for(const b of state.blocks) if(b.type === 'mill'){ b.produce = (b.produce||0) + dt; const inter = 1000 / STRUCTURES.mill.producePerSec; while(b.produce >= inter){ b.produce -= inter; state.player.wood++; } }
+      // towers fire
+      for(const b of state.blocks){
+        if((b.type==='turret' || b.type==='tower') && (!b.disabled || b.disabled<=0)){
+          b.lastFire = (b.lastFire||0) + dt;
+          const spec = STRUCTURES[b.type];
+          if(b.lastFire >= spec.fireRate){
+            // nearest enemy
+            let best=null, bd=1e9;
+            for(const e of state.enemies){ const d = distXY(e.x,e.y,b.x,b.y); if(d<bd && d<=spec.range){ bd=d; best=e; } }
+            if(best){ best.hp -= spec.dmg; if(b.type==='tower'){ const vx=best.x-b.x, vy=best.y-b.y, dd=Math.hypot(vx,vy)||1; best.x += (vx/dd) * spec.knockback; best.y += (vy/dd) * spec.knockback; } b.lastFire=0; }
+          }
+        }
+        if(b.disabled && b.disabled>0) b.disabled -= dt;
+        if(b.onFire && b.onFire>0){ b.hp -= (dt/1000)*4; b.onFire -= dt; }
+        if(b.frozen && b.frozen>0) b.frozen -= dt;
+      }
+      // enemies behavior
+      for(const e of state.enemies) enemyAIStep(e, dt);
+      // projectiles
+      tickProjectiles(dt);
+      // lava
+      tickLava(dt);
+      // outposts
+      tickOutposts(dt);
+      // remove dead enemies
+      for(let i=state.enemies.length-1;i>=0;i--){
+        if(state.enemies[i].hp <= 0){
+          const dead = state.enemies[i];
+          // death effects
+          if(dead.type === 'flame_imp') areaDamage(dead.x, dead.y, 40, 18);
+          if(dead.type === 'magma_golem') createLavaPool(dead.x, dead.y, 5000);
+          if(dead.type === 'dragon_overlord') areaDamage(dead.x, dead.y, 120, 60);
+          state.enemies.splice(i,1);
+        }
+      }
+      // units
+      for(const u of state.units){
+        let best=null, bd=1e9;
+        for(const e of state.enemies){ const d = distXY(e.x,e.y,u.x,u.y); if(d<bd){ bd=d; best=e; } }
+        if(best){
+          stepMoveTowards(u, best.x, best.y, u.speed, dt);
+          if(distXY(u.x,u.y,best.x,best.y) < 12) best.hp -= u.atk * (dt/1000) * 40;
+        } else { u.x += rand(-0.2,0.2); u.y += rand(-0.2,0.2); }
+      }
+      // player death
+      if(state.player.hp <= 0){ state.player.alive = false; showDeath(); }
+      // wave tick
+      tickWave(dt);
+      // sprint tick
+      tickSprint(dt);
+    }
+  }
+  render(); // draw frame
+  requestAnimationFrame(mainLoop);
+}
+
+// ---------- RENDER ----------
+function render(){
+  const cam = camera();
+  // background gradient based on group
+  const g = GROUPS[state.wave.groupIndex] || GROUPS[0];
+  const sky = ctx.createLinearGradient(0,0,0,canvas.height); sky.addColorStop(0,g.bgTop); sky.addColorStop(1,g.bgBottom);
+  ctx.fillStyle = sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.save(); ctx.translate(-cam.x, -cam.y);
+  // ground
+  ctx.fillStyle = '#2b7a2b'; ctx.fillRect(0,0, CONFIG.worldW, CONFIG.worldH);
+  // trees
+  for(const t of state.trees){
+    ctx.fillStyle='#6b3'; ctx.fillRect(t.x-6,t.y+8,12,18);
+    const gtree = ctx.createRadialGradient(t.x,t.y-6,6,t.x,t.y-6,28); gtree.addColorStop(0,'#9fe08a'); gtree.addColorStop(1,'#2e8b57');
+    ctx.fillStyle = gtree; ctx.beginPath(); ctx.arc(t.x,t.y-6,28,0,Math.PI*2); ctx.fill();
+    if(t.wood<=0){ ctx.fillStyle='#4b3b2a'; ctx.fillRect(t.x-10,t.y+6,20,8); }
+  }
+  // blocks
+  for(const b of state.blocks){
+    ctx.fillStyle='rgba(0,0,0,0.18)'; ctx.fillRect(b.x - b.w/2 + 6, b.y - b.h/2 + 8, b.w, b.h);
+    if(b.type==='wall'){ ctx.fillStyle='#8B4513'; ctx.fillRect(b.x - b.w/2, b.y - b.h/2, b.w, b.h); }
+    if(b.type==='tower'){ ctx.fillStyle='#6e3b1a'; ctx.fillRect(b.x - b.w/2, b.y - b.h/2, b.w, b.h); }
+    if(b.type==='turret'){ ctx.fillStyle='#444'; ctx.fillRect(b.x - b.w/2, b.y - b.h/2, b.w, b.h); }
+    if(b.type==='mill'){ ctx.fillStyle='#7a5'; ctx.fillRect(b.x - b.w/2, b.y - b.h/2, b.w, b.h); }
+    ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(b.x-22, b.y - b.h/2 - 10, 44, 6);
+    ctx.fillStyle='#0f0'; ctx.fillRect(b.x-22, b.y - b.h/2 - 10, 44 * clamp(b.hp / (STRUCTURES[b.type].hp || 200),0,1), 6);
+  }
+  // outposts
+  for(const o of state.outposts){ ctx.fillStyle='#440022'; ctx.fillRect(o.x-20,o.y-20,40,40); ctx.fillStyle='#ffcc66'; ctx.fillRect(o.x-6,o.y-6,12,12); }
+  // lava pools
+  for(const lp of state.lavaPools){ ctx.beginPath(); ctx.fillStyle='rgba(200,60,20,0.4)'; ctx.arc(lp.x,lp.y,lp.r,0,Math.PI*2); ctx.fill(); }
+  // units
+  for(const u of state.units){ ctx.fillStyle='#2f6fff'; ctx.beginPath(); ctx.arc(u.x,u.y,8,0,Math.PI*2); ctx.fill(); }
+  // enemies
+  for(const e of state.enemies){
+    if(e._phased) ctx.globalAlpha = 0.45;
+    ctx.fillStyle = e.color || '#d22'; ctx.beginPath(); ctx.arc(e.x,e.y,e.size || 12,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(e.x-18, e.y - (e.size||12) - 14, 36, 5);
+    ctx.fillStyle='#ff6b6b'; ctx.fillRect(e.x-18, e.y - (e.size||12) - 14, 36 * clamp(e.hp / e.maxHp,0,1), 5);
+  }
+  // projectiles
+  for(const p of state.projectiles){ ctx.fillStyle='#ffd'; ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill(); }
+  // player
+  ctx.fillStyle='#0033aa'; ctx.beginPath(); ctx.arc(state.player.x,state.player.y,state.player.r,0,Math.PI*2); ctx.fill();
+  if(state.sprint.active){ ctx.beginPath(); ctx.strokeStyle='rgba(255,255,100,0.6)'; ctx.lineWidth = 3; ctx.arc(state.player.x,state.player.y,state.player.r+8,0,Math.PI*2); ctx.stroke(); ctx.lineWidth = 1; }
+  ctx.restore();
+  // minimap
+  drawMinimap();
+}
+
+// ---------- MINIMAP ----------
+function drawMinimap(){
+  const W = mmCanvas.width, H = mmCanvas.height; mmCtx.clearRect(0,0,W,H); mmCtx.fillStyle='#07101a'; mmCtx.fillRect(0,0,W,H);
+  const sx = W / CONFIG.worldW, sy = H / CONFIG.worldH;
+  mmCtx.fillStyle='#2e8b57'; for(const t of state.trees) mmCtx.fillRect(t.x*sx, t.y*sy, 2,2);
+  for(const b of state.blocks){ mmCtx.fillStyle = '#8B4513'; mmCtx.fillRect((b.x-b.w/2)*sx, (b.y-b.h/2)*sy, Math.max(1,b.w*sx), Math.max(1,b.h*sy)); }
+  mmCtx.fillStyle='#ff4466'; for(const e of state.enemies) mmCtx.fillRect(e.x*sx, e.y*sy, 2,2);
+  mmCtx.fillStyle='#00bfff'; mmCtx.fillRect(state.player.x*sx-2, state.player.y*sy-2, 4,4);
+  mmCtx.fillStyle='#ffcc66'; for(const o of state.outposts) mmCtx.fillRect(o.x*sx, o.y*sy, 3,3);
+}
+
+// ---------- SMALL UTIL ----------
+function areaDamage(cx,cy,r,dmg){
+  for(const e of state.enemies) if(distXY(e.x,e.y,cx,cy) <= r) e.hp -= dmg;
+  for(const b of state.blocks) if(distXY(b.x,b.y,cx,cy) <= r) b.hp -= dmg;
+  if(distXY(state.player.x,state.player.y,cx,cy) <= r) state.player.hp -= dmg;
+}
+
+// ---------- PAUSE ----------
+function togglePause(){ state.paused = !state.paused; document.getElementById('pauseOverlay').style.display = state.paused ? 'flex' : 'none'; document.getElementById('pauseBtn').textContent = state.paused ? 'Resume' : 'Pause'; }
+
+// ---------- START & SCHEDULING ----------
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  document.getElementById('loadingScreen').style.display='none';
+  // initialize wave counters
+  state.wave.total = 0; state.wave.active = false; state.wave.intermission = 1.2;
+  last = performance.now(); running = true; requestAnimationFrame(mainLoop);
+  // schedule first wave after small delay
+  setTimeout(()=>{ scheduleNextTotalWave(); }, 800);
+});
+
+function scheduleNextTotalWave(){ // wrapper
+  if(state.wave.total >= CONFIG.wavesPerGroup * CONFIG.groupsCount){ alert('Victory!'); return; }
+  state.wave.total++;
+  const tot = state.wave.total;
+  state.wave.groupIndex = Math.floor((tot-1)/CONFIG.wavesPerGroup);
+  state.wave.waveInGroup = ((tot-1) % CONFIG.wavesPerGroup) + 1;
+  state.wave.queue = buildQueueForTotal(tot);
+  state.wave.active = true; state.wave.spawnTimer = 0;
+  const g = GROUPS[state.wave.groupIndex];
+  document.body.style.background = `linear-gradient(${g.bgTop}, ${g.bgBottom})`;
+  waveGroupNameEl.textContent = `${g.name} — ${g.subtitle}`;
+  waveNumEl.textContent = state.wave.waveInGroup;
+  waveTotalEl.textContent = state.wave.total + ' / ' + (CONFIG.wavesPerGroup * CONFIG.groupsCount);
+}
+
+// ---------- RESIZE ----------
+function fitCanvas(){ const maxW = Math.min(window.innerWidth - 40, 1200); const maxH = Math.min(window.innerHeight - 40, 760); const ratio = canvas.width / canvas.height; let newW = maxW, newH = Math.round(newW / ratio); if(newH > maxH){ newH = maxH; newW = Math.round(newH * ratio); } canvas.style.width = newW + 'px'; canvas.style.height = newH + 'px'; }
+window.addEventListener('resize', fitCanvas); fitCanvas();
+
+// ---------- Helpers (exposed inside) ----------
+function rand(min,max){ return Math.random()*(max-min)+min; }
+
+// ---------- End of script ----------
+</script>
+</body>
+</html>
