@@ -1,8 +1,124 @@
-<doctype HTML>
-<html>
-  <h1><b>Games:</b></h1>
-  <a href="https://bozinespungiforum.net/wordle">Wordle</a><br>
-  <a href="https://bozinespungiforum.net/bozmaze">The Daily Maze</a><br>
-  <a href="https://bozinespungiforum.net/bozmanmax">Boz Man Max</a><br>
-  <a href="https://bozinespungiforum.net/bozmanmax2">Boz Man Max 2 (Harder)</a><br>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bozine Spungiforum — Games</title>
+
+<style>
+html,body{
+  height:100%;
+  margin:0;
+  font-family:"Comic Sans MS","Comic Sans",cursive,Arial
+}
+body{
+  background:
+    radial-gradient(circle at 10% 10%, #ff6, transparent 20%),
+    radial-gradient(circle at 90% 90%, #6ff, transparent 20%),
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0 10px, transparent 10px 20px);
+  background-blend-mode:screen,screen,normal;
+  color:#001;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:12px;
+  padding:24px;
+  box-sizing:border-box;
+}
+
+.container{
+  width:420px;
+  max-width:95%;
+  background:linear-gradient(180deg,#fff8c6,#ffd8e6);
+  border:6px double #00f;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:10px 10px 0 rgba(0,0,0,0.12);
+  text-align:center;
+}
+h1{
+  margin:0 0 8px 0;
+  font-size:28px;
+  letter-spacing:1px
+}
+.sub{
+  font-size:12px;
+  margin-bottom:10px;
+}
+
+.ticker{
+  overflow:hidden;
+  white-space:nowrap;
+  border-top:4px dashed #f00;
+  border-bottom:4px dashed #0a0;
+  padding:6px 0;
+  margin-bottom:16px
+}
+.ticker span{
+  display:inline-block;
+  padding-left:100%;
+  animation:scroll 12s linear infinite;
+}
+@keyframes scroll{
+  from{transform:translateX(0)}
+  to{transform:translateX(-100%)}
+}
+
+.menu{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.menu a{
+  text-decoration:none;
+  padding:10px;
+  border-radius:8px;
+  border:3px outset #c60;
+  background:linear-gradient(180deg,#ff3 0%, #f90 100%);
+  font-weight:bold;
+  color:#001;
+  transition:transform .1s;
+}
+.menu a:active{
+  transform:translateY(2px)
+}
+
+.foot{
+  font-size:11px;
+  text-align:center;
+  margin-top:12px;
+  color:#222
+}
+
+.spunge{
+  position:absolute;
+  right:18px;
+  top:18px;
+  transform:rotate(-12deg);
+  filter:drop-shadow(4px 6px 2px rgba(0,0,0,0.2))
+}
+</style>
+</head>
+
+<body>
+<img class="spunge" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='80'><text x='0' y='50' font-family='Comic Sans MS, Arial' font-size='40' fill='%23ff00ff'>🫧</text></svg>" alt="spunge">
+
+<div class="container">
+  <h1>Games Portal</h1>
+  <div class="sub">The Bozine Spungiforum</div>
+
+  <div class="ticker"><span> PLAY • EXPLORE • GET LOST IN THE BOZ GAMES </span></div>
+
+  <div class="menu">
+    <a href="https://bozinespungiforum.net/wordle">Wordle</a>
+    <a href="https://bozinespungiforum.net/bozmaze">The Daily Maze</a>
+    <a href="https://bozinespungiforum.net/bozmanmax">Boz Man Max</a>
+    <a href="https://bozinespungiforum.net/bozmanmax2">Boz Man Max 2 (Harder)</a>
+  </div>
+
+  <div class="foot">Sponsored by DTE</div>
+</div>
+
+</body>
 </html>
