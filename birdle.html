@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Birdle — Guess species + categories</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0e141b;
+      --panel: #131a22;
+      --text: #e6edf3;
+      --muted: #a0adba;
+      --accent: #4fb3ff;
+      --green: #21bf73;
+      --yellow: #ffcc00;
+      --red: #ff4d4f;
+      --tile: #172131;
+      --tile-border: #243042;
+      --btn: #1c2a3a;
+      --btn-hover: #243447;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1100px 700px at 10% 0%, #0b1016, var(--bg));
+      color: var(--text);
+    }
+    header {
+      padding: 20px;
+      border-bottom: 1px solid #1f2631;
+      background: linear-gradient(180deg, #121821, #0f141b);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+      display: grid; place-items: center;
+      color: #082238; font-weight: 700; letter-spacing: 0.4px;
+    }
+    .brand h1 { font-size: 20px; margin: 0; letter-spacing: 0.3px; }
+    .brand small { color: var(--muted); }
+    main { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid #1f2631;
+      border-radius: 14px; padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+      margin-bottom: 16px;
+    }
+    .controls button {
+      background: var(--btn); color: var(--text);
+      border: 1px solid #2b3445; border-radius: 10px;
+      padding: 10px 14px; cursor: pointer; font-weight: 600;
+    }
+    .controls button:hover { background: var(--btn-hover); }
+    .status { color: var(--muted); font-size: 14px; margin-left: auto; }
+
+    .input-row {
+      display: grid; grid-template-columns: 1.6fr repeat(4, 1fr) auto; gap: 12px;
+      margin: 12px 0 18px 0;
+    }
+    .combo { position: relative; }
+    .combo input {
+      width: 100%; padding: 12px 14px; border-radius: 10px;
+      border: 1px solid #2b3445; background: #141922; color: var(--text); outline: none;
+      font-size: 15px;
+    }
+    .combo-list {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #0f131a; border: 1px solid #243044; border-radius: 10px;
+      max-height: 240px; overflow: auto; display: none; z-index: 10;
+    }
+    .combo-list.open { display: block; }
+    .combo-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #1a2230; }
+    .combo-item:last-child { border-bottom: none; }
+    .combo-item:hover { background: #162032; }
+
+    select {
+      width: 100%; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid #2b3445; background: #141922; color: var(--text); outline: none;
+      font-size: 15px;
+    }
+    .submit {
+      background: var(--accent); color: #061421; border: none;
+      border-radius: 10px; padding: 12px 18px; font-weight: 700; cursor: pointer;
+    }
+    .submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px; margin-top: 8px;
+    }
+    .tile {
+      background: var(--tile);
+      border: 1px solid var(--tile-border);
+      border-radius: 12px; padding: 12px; min-height: 84px;
+    }
+    .tile h4 {
+      margin: 0 0 8px 0; font-size: 13px; color: var(--muted); font-weight: 700;
+      letter-spacing: 0.4px; text-transform: uppercase;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 10px; border-radius: 999px; font-size: 13px;
+      border: 1px solid #324056; background: #151d2a;
+    }
+    .pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .match { color: var(--green); border-color: #285a3b; background: #0f2a19; }
+    .partial { color: var(--yellow); border-color: #5a5028; background: #2a240f; }
+    .miss { color: var(--red); border-color: #5a2830; background: #2a0f19; }
+    .desc { margin-top: 6px; color: var(--muted); font-size: 12px; }
+
+    .rows { margin-top: 14px; display: grid; gap: 10px; }
+    .row {
+      display: grid; grid-template-columns: 1.6fr repeat(4, 1fr);
+      gap: 10px;
+    }
+    .cell {
+      background: var(--tile); border: 1px solid var(--tile-border);
+      border-radius: 12px; padding: 10px 12px; min-height: 50px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .cell strong { font-size: 14px; }
+    .name {
+      display: flex; flex-direction: column; align-items: flex-start;
+      gap: 6px; font-size: 14px;
+    }
+    .name .sci { color: var(--muted); font-size: 12px; }
+
+    .hint {
+      background: #122032; border: 1px dashed #2d3f57;
+      border-radius: 12px; padding: 10px 12px; color: var(--muted); white-space: pre-line;
+      margin-top: 10px; display: none;
+    }
+    .result {
+      margin-top: 16px; padding: 12px; border-radius: 12px;
+      background: #132018; border: 1px solid #294332; display: none;
+    }
+    .footer {
+      margin-top: 22px; color: var(--muted); font-size: 13px;
+      display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+    }
+    .kbd {
+      background: #121620; border: 1px solid #2b3445; border-radius: 6px;
+      padding: 2px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px; color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🕊</div>
+      <div>
+        <h1>Birdle — Species + categories</h1>
+        <small>Guess the UK species and the four categories — unlimited rounds</small>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="controls">
+        <button id="newGameBtn">New bird</button>
+        <button id="difficultyBtn">Difficulty: <span id="difficultyLabel">Normal</span></button>
+        <div class="status"><span id="statusText">Six guesses available</span></div>
+      </div>
+
+      <div class="input-row">
+        <div class="combo">
+          <label for="speciesInput" class="sr-only">Species</label>
+          <input id="speciesInput" type="text" placeholder="Species (e.g., Robin, Kestrel, Larus argentatus)" autocomplete="off" />
+          <div id="comboList" class="combo-list" role="listbox" aria-label="Species suggestions"></div>
+        </div>
+        <select id="foodSelect" aria-label="Food type">
+          <option value="" disabled selected>Food Type</option>
+        </select>
+        <select id="sizeSelect" aria-label="Bird size">
+          <option value="" disabled selected>Bird Size</option>
+        </select>
+        <select id="feetSelect" aria-label="Foot function">
+          <option value="" disabled selected>Foot Function</option>
+        </select>
+        <select id="habSelect" aria-label="Habitat">
+          <option value="" disabled selected>Habitat</option>
+        </select>
+        <button id="submitBtn" class="submit">Guess</button>
+      </div>
+
+      <div class="grid">
+        <div class="tile">
+          <h4>Species</h4>
+          <span id="speciesPill" class="pill"><span class="dot" style="background:#3a475a"></span><span id="speciesText">—</span></span>
+          <div class="desc" id="speciesDesc">Guess the exact species (common or scientific).</div>
+        </div>
+        <div class="tile">
+          <h4>Food type</h4>
+          <span id="foodPill" class="pill"><span class="dot" style="background:#3a475a"></span><span id="foodText">—</span></span>
+          <div class="desc" id="foodDesc"></div>
+        </div>
+        <div class="tile">
+          <h4>Bird size</h4>
+          <span id="sizePill" class="pill"><span class="dot" style="background:#3a475a"></span><span id="sizeText">—</span></span>
+          <div class="desc" id="sizeDesc"></div>
+        </div>
+        <div class="tile">
+          <h4>Foot function</h4>
+          <span id="feetPill" class="pill"><span class="dot" style="background:#3a475a"></span><span id="feetText">—</span></span>
+          <div class="desc" id="feetDesc"></div>
+        </div>
+        <div class="tile">
+          <h4>Habitat</h4>
+          <span id="habPill" class="pill"><span class="dot" style="background:#3a475a"></span><span id="habText">—</span></span>
+          <div class="desc" id="habDesc"></div>
+        </div>
+      </div>
+
+      <div class="rows" id="rows"></div>
+
+      <div id="hintBox" class="hint"></div>
+      <div id="resultBox" class="result"></div>
+
+      <div class="footer">
+        <span>Hints appear after guess 3 and 5.</span>
+        <span>Match colors: <span class="kbd">Green</span> exact · <span class="kbd">Yellow</span> related · <span class="kbd">Red</span> no match</span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Category dictionaries (exact wording you provided)
+    const FOOD_TYPES = {
+      "Fish": "Aquatic animal that usually has gills for breathing. Gulls, pelicans, and cormorants eat fish. Piscivory.",
+      "Fruit": "The sweet and fleshy part of a plant that contains seeds. Fruits are eaten by birds such as mousebirds and parrots. Frugivory.",
+      "Insect": "A type of small invertebrate animal with six legs and a hard exoskeleton. Swallows and flycatchers eat insects. Insectivory.",
+      "Invertebrate": "Animal that lacks a backbone or vertebral column, such as crustaceans, molluscs and worms. Insects are also invertebrates, but have their own category due to their importance to many bird species. Robins and warblers eat invertebrates.",
+      "Meat": "The flesh or body parts of vertebrate animals, including mammals, amphibians, reptiles, other birds or their eggs, carrion, etc. Eagles and vultures eat meat as part of their diet. Carnivory.",
+      "Plant": "A living organism that uses photosynthesis to produce its own food. Many birds, like dabbling ducks, eat plants. Herbivory.",
+      "Seed": "Reproductive portion of a plant not surrounded by a fleshy fruit, such as on grasses. Sparrows and finches eat seeds. Granivory"
+    };
+    const SIZES = {
+      "Extremely Small": "Birds ranging from a Goldcrest (~8cm) to a Blue Tit (~13cm).",
+      "Small": "Between the size of a House Sparrow (~14cm) and a Dunnock (~20cm).",
+      "Medium": "Ranging from a Starling (~21cm) to a Kittiwake (~42cm).",
+      "Large": "Birds between the size of a Fulmar (~43cm) and a Grey Heron (~100cm).",
+      "Extremely Large": "Birds larger than a Grey Heron (~100cm), for example a Mute Swan (~150cm)."
+    };
+    const FEET = {
+      "Hunting": "Using sharp claws or talons on the feet for catching, hunting or holding onto prey or carcasses. Birds of prey like eagles, falcons and vultures have talons.",
+      "Perching": "Using the feet to grip onto something for support. Sparrows and finches use their feet for perching.",
+      "Swimming": "Having the toes connected by a web of skin, efficient for swimming and, in some species' cases, wading. Many water birds, such as ducks and geese, have webbed feet.",
+      "Walking": "Moving on foot on the ground. For example, cranes, spurfowls and many waders use their feet for walking."
+    };
+    const HABITATS = {
+      "Aerial": "Living mostly on the wing, in the air. Some aerial birds include martins, swallows and swifts.",
+      "Agriculture": "An area used for growing crops. Many birds, such as larks and pipits, live in agricultural areas.",
+      "Coastal": "Area situated near or on the coast, such as beaches, rocky shorelines, and shallow coastal waters. Gulls and terns live in or near coastal areas.",
+      "Forest": "A dense area of trees and undergrowth, including montane, mid-altitude and riverine forests. Birds such as martins and robins live in forests.",
+      "Freshwater": "An area permanently saturated with water containing little or no plants, such as a lake, dam, or river. Warblers and teals live in aquatic habitats.",
+      "Grassland": "An area covered with grass. Birds such as larks live in grassland habitats.",
+      "Marine": "The saltwater ocean environment. Frigatebirds and petrels live in marine habitats.",
+      "Scrubland": "A habitat characterized by shrubs, bushes, and low-growing vegetation. Birds such as stonechats and whitethroats are commonly found in scrubland habitats.",
+      "Upland": "Hilly or mountainous areas above the tree line. Birds such as grouses and eagles are typical of upland regions.",
+      "Urban": "Built environments including towns and cities, city gardens and parks. Birds such as pigeons and sparrows thrive in urban areas.",
+      "Wetland": "An area permanently or ephemerally saturated with water, such as a swamp, lake or marsh. Ducks and herons live in wetland habitats"
+    };
+
+    // UK species dataset — common name, scientific, categories
+    const BIRDS = [
+      {common:"Robin", name:"Erithacus rubecula", food:["Insect","Invertebrate"], size:"Small", feet:"Perching", habitat:["Forest","Urban","Scrubland","Agriculture"]},
+      {common:"Blackbird", name:"Turdus merula", food:["Invertebrate","Fruit"], size:"Medium", feet:"Perching", habitat:["Forest","Urban","Scrubland"]},
+      {common:"Song Thrush", name:"Turdus philomelos", food:["Invertebrate","Fruit"], size:"Medium", feet:"Perching", habitat:["Forest","Scrubland","Urban"]},
+      {common:"Blue Tit", name:"Cyanistes caeruleus", food:["Insect","Seed"], size:"Extremely Small", feet:"Perching", habitat:["Forest","Urban","Scrubland"]},
+      {common:"Great Tit", name:"Parus major", food:["Insect","Seed"], size:"Small", feet:"Perching", habitat:["Forest","Urban","Scrubland"]},
+      {common:"Coal Tit", name:"Periparus ater", food:["Insect","Seed"], size:"Extremely Small", feet:"Perching", habitat:["Forest"]},
+      {common:"Long-tailed Tit", name:"Aegithalos caudatus", food:["Insect"], size:"Extremely Small", feet:"Perching", habitat:["Forest","Scrubland","Urban"]},
+      {common:"Wren", name:"Troglodytes troglodytes", food:["Insect","Invertebrate"], size:"Extremely Small", feet:"Perching", habitat:["Forest","Scrubland","Urban"]},
+      {common:"Dunnock", name:"Prunella modularis", food:["Insect","Invertebrate","Seed"], size:"Small", feet:"Perching", habitat:["Scrubland","Urban"]},
+      {common:"Goldcrest", name:"Regulus regulus", food:["Insect"], size:"Extremely Small", feet:"Perching", habitat:["Forest"]},
+      {common:"House Sparrow", name:"Passer domesticus", food:["Seed","Invertebrate"], size:"Small", feet:"Perching", habitat:["Urban","Agriculture"]},
+      {common:"Chaffinch", name:"Fringilla coelebs", food:["Seed","Insect"], size:"Small", feet:"Perching", habitat:["Forest","Urban","Agriculture"]},
+      {common:"Greenfinch", name:"Chloris chloris", food:["Seed"], size:"Small", feet:"Perching", habitat:["Urban","Scrubland"]},
+      {common:"Goldfinch", name:"Carduelis carduelis", food:["Seed"], size:"Small", feet:"Perching", habitat:["Urban","Scrubland","Agriculture"]},
+      {common:"Starling", name:"Sturnus vulgaris", food:["Invertebrate","Fruit","Seed"], size:"Small", feet:"Walking", habitat:["Urban","Agriculture","Grassland"]},
+      {common:"Magpie", name:"Pica pica", food:["Invertebrate","Meat","Fruit","Seed"], size:"Medium", feet:"Walking", habitat:["Urban","Agriculture","Scrubland"]},
+      {common:"Carrion Crow", name:"Corvus corone", food:["Meat","Invertebrate","Plant","Seed"], size:"Medium", feet:"Walking", habitat:["Urban","Agriculture","Coastal"]},
+      {common:"Rook", name:"Corvus frugilegus", food:["Invertebrate","Seed","Plant"], size:"Medium", feet:"Walking", habitat:["Agriculture","Urban"]},
+      {common:"Jay", name:"Garrulus glandarius", food:["Seed","Fruit","Invertebrate"], size:"Medium", feet:"Perching", habitat:["Forest"]},
+      {common:"Raven", name:"Corvus corax", food:["Meat","Invertebrate"], size:"Large", feet:"Walking", habitat:["Upland","Coastal"]},
+      {common:"Blackcap", name:"Sylvia atricapilla", food:["Insect","Fruit"], size:"Small", feet:"Perching", habitat:["Forest","Scrubland","Urban"]},
+      {common:"Whitethroat", name:"Curruca communis", food:["Insect","Fruit"], size:"Small", feet:"Perching", habitat:["Scrubland","Agriculture"]},
+      {common:"Willow Warbler", name:"Phylloscopus trochilus", food:["Insect"], size:"Small", feet:"Perching", habitat:["Forest","Scrubland"]},
+      {common:"Chiffchaff", name:"Phylloscopus collybita", food:["Insect"], size:"Small", feet:"Perching", habitat:["Forest","Scrubland"]},
+      {common:"Sedge Warbler", name:"Acrocephalus schoenobaenus", food:["Insect","Invertebrate"], size:"Small", feet:"Perching", habitat:["Wetland","Freshwater","Scrubland"]},
+      {common:"Reed Warbler", name:"Acrocephalus scirpaceus", food:["Insect","Invertebrate"], size:"Small", feet:"Perching", habitat:["Wetland","Freshwater"]},
+      {common:"Skylark", name:"Alauda arvensis", food:["Seed","Invertebrate"], size:"Small", feet:"Walking", habitat:["Agriculture","Grassland"]},
+      {common:"Meadow Pipit", name:"Anthus pratensis", food:["Insect","Invertebrate","Seed"], size:"Small", feet:"Walking", habitat:["Grassland","Upland"]},
+      {common:"Pied Wagtail", name:"Motacilla alba", food:["Insect","Invertebrate"], size:"Small", feet:"Walking", habitat:["Urban","Freshwater","Coastal"]},
+      {common:"Swallow", name:"Hirundo rustica", food:["Insect"], size:"Small", feet:"Perching", habitat:["Aerial","Agriculture","Urban"]},
+      {common:"House Martin", name:"Delichon urbicum", food:["Insect"], size:"Small", feet:"Perching", habitat:["Aerial","Urban"]},
+      {common:"Swift", name:"Apus apus", food:["Insect"], size:"Small", feet:"Perching", habitat:["Aerial","Urban"]},
+      {common:"Barn Owl", name:"Tyto alba", food:["Meat"], size:"Medium", feet:"Hunting", habitat:["Agriculture","Scrubland"]},
+      {common:"Tawny Owl", name:"Strix aluco", food:["Meat","Invertebrate"], size:"Medium", feet:"Hunting", habitat:["Forest","Urban"]},
+      {common:"Kestrel", name:"Falco tinnunculus", food:["Meat","Invertebrate"], size:"Small", feet:"Hunting", habitat:["Agriculture","Upland","Urban"]},
+      {common:"Peregrine Falcon", name:"Falco peregrinus", food:["Meat"], size:"Medium", feet:"Hunting", habitat:["Coastal","Urban","Upland"]},
+      {common:"Buzzard", name:"Buteo buteo", food:["Meat","Invertebrate"], size:"Medium", feet:"Hunting", habitat:["Upland","Agriculture","Forest"]},
+      {common:"Red Kite", name:"Milvus milvus", food:["Meat"], size:"Large", feet:"Hunting", habitat:["Agriculture","Upland"]},
+      {common:"White-tailed Eagle", name:"Haliaeetus albicilla", food:["Meat","Fish"], size:"Extremely Large", feet:"Hunting", habitat:["Coastal","Freshwater","Marine"]},
+      {common:"Woodpigeon", name:"Columba palumbus", food:["Plant","Seed"], size:"Medium", feet:"Walking", habitat:["Forest","Urban","Agriculture"]},
+      {common:"Collared Dove", name:"Streptopelia decaocto", food:["Seed","Plant"], size:"Medium", feet:"Walking", habitat:["Urban","Agriculture"]},
+      {common:"Oystercatcher", name:"Haematopus ostralegus", food:["Invertebrate"], size:"Medium", feet:"Walking", habitat:["Coastal"]},
+      {common:"Lapwing", name:"Vanellus vanellus", food:["Invertebrate","Seed"], size:"Medium", feet:"Walking", habitat:["Agriculture","Wetland"]},
+      {common:"Curlew", name:"Numenius arquata", food:["Invertebrate"], size:"Large", feet:"Walking", habitat:["Wetland","Coastal","Upland"]},
+      {common:"Redshank", name:"Tringa totanus", food:["Invertebrate"], size:"Medium", feet:"Walking", habitat:["Wetland","Coastal"]},
+      {common:"Black-headed Gull", name:"Chroicocephalus ridibundus", food:["Fish","Invertebrate","Meat"], size:"Medium", feet:"Walking", habitat:["Coastal","Freshwater","Urban"]},
+      {common:"Herring Gull", name:"Larus argentatus", food:["Fish","Meat","Invertebrate"], size:"Large", feet:"Walking", habitat:["Coastal","Urban","Marine"]},
+      {common:"Kittiwake", name:"Rissa tridactyla", food:["Fish"], size:"Medium", feet:"Walking", habitat:["Coastal","Marine"]},
+      {common:"Common Tern", name:"Sterna hirundo", food:["Fish"], size:"Medium", feet:"Walking", habitat:["Coastal","Freshwater","Marine"]},
+      {common:"Gannet", name:"Morus bassanus", food:["Fish"], size:"Large", feet:"Swimming", habitat:["Marine","Coastal"]},
+      {common:"Cormorant", name:"Phalacrocorax carbo", food:["Fish"], size:"Large", feet:"Swimming", habitat:["Coastal","Freshwater","Marine"]},
+      {common:"Shag", name:"Gulosus aristotelis", food:["Fish"], size:"Medium", feet:"Swimming", habitat:["Coastal","Marine"]},
+      {common:"Fulmar", name:"Fulmarus glacialis", food:["Fish","Meat"], size:"Large", feet:"Swimming", habitat:["Marine","Coastal"]},
+      {common:"Guillemot", name:"Uria aalge", food:["Fish"], size:"Medium", feet:"Swimming", habitat:["Marine","Coastal"]},
+      {common:"Razorbill", name:"Alca torda", food:["Fish"], size:"Medium", feet:"Swimming", habitat:["Marine","Coastal"]},
+      {common:"Puffin", name:"Fratercula arctica", food:["Fish"], size:"Small", feet:"Swimming", habitat:["Marine","Coastal"]},
+      {common:"Mute Swan", name:"Cygnus olor", food:["Plant"], size:"Extremely Large", feet:"Swimming", habitat:["Freshwater","Wetland"]},
+      {common:"Greylag Goose", name:"Anser anser", food:["Plant","Seed"], size:"Large", feet:"Swimming", habitat:["Freshwater","Wetland","Agriculture"]},
+      {common:"Mallard", name:"Anas platyrhynchos", food:["Plant","Invertebrate","Seed"], size:"Medium", feet:"Swimming", habitat:["Freshwater","Wetland","Urban"]},
+      {common:"Teal", name:"Anas crecca", food:["Plant","Invertebrate","Seed"], size:"Small", feet:"Swimming", habitat:["Freshwater","Wetland"]},
+      {common:"Tufted Duck", name:"Aythya fuligula", food:["Invertebrate","Plant"], size:"Medium", feet:"Swimming", habitat:["Freshwater","Wetland"]},
+      {common:"Goldeneye", name:"Bucephala clangula", food:["Invertebrate","Fish"], size:"Medium", feet:"Swimming", habitat:["Freshwater","Wetland"]},
+      {common:"Grey Heron", name:"Ardea cinerea", food:["Fish","Meat","Invertebrate"], size:"Large", feet:"Walking", habitat:["Freshwater","Wetland","Coastal"]},
+      {common:"Little Egret", name:"Egretta garzetta", food:["Fish","Invertebrate"], size:"Medium", feet:"Walking", habitat:["Coastal","Wetland","Freshwater"]},
+      {common:"Moorhen", name:"Gallinula chloropus", food:["Plant","Invertebrate"], size:"Small", feet:"Swimming", habitat:["Freshwater","Wetland"]},
+      {common:"Coot", name:"Fulica atra", food:["Plant","Invertebrate"], size:"Medium", feet:"Swimming", habitat:["Freshwater","Wetland"]}
+    ];
+
+    // Names & index for quick lookup
+    const COMMONS = BIRDS.map(b => b.common);
+    const SCIENTIFICS = BIRDS.map(b => b.name);
+    const INDEX_COMMON = new Map(BIRDS.map(b => [b.common.toLowerCase(), b]));
+    const INDEX_SCI = new Map(BIRDS.map(b => [b.name.toLowerCase(), b]));
+
+    // Adjacency rules
+    const sizeOrder = ["Extremely Small","Small","Medium","Large","Extremely Large"];
+    function sizeStatus(guess, target) {
+      if (guess === target) return 'match';
+      const gi = sizeOrder.indexOf(guess), ti = sizeOrder.indexOf(target);
+      return (Math.abs(gi - ti) === 1) ? 'partial' : 'miss';
+    }
+    function foodStatus(guess, targetArr) {
+      const tset = new Set(targetArr);
+      if (tset.has(guess)) return 'match';
+      const adj = [["Insect","Invertebrate"],["Plant","Seed"],["Meat","Fish"]];
+      for (const [a,b] of adj) {
+        if ((guess === a && tset.has(b)) || (guess === b && tset.has(a))) return 'partial';
+      }
+      return 'miss';
+    }
+    function feetStatus(guess, target) {
+      if (guess === target) return 'match';
+      const adj = new Set(["Walking|Perching","Perching|Walking","Swimming|Walking","Walking|Swimming"]);
+      return adj.has(`${guess}|${target}`) ? 'partial' : 'miss';
+    }
+    function habitatStatus(guess, targetArr) {
+      const t = new Set(targetArr);
+      if (t.has(guess)) return 'match';
+      const pairs = [
+        ["Coastal","Marine"], ["Marine","Coastal"],
+        ["Freshwater","Wetland"], ["Wetland","Freshwater"],
+        ["Forest","Scrubland"], ["Scrubland","Forest"],
+        ["Agriculture","Grassland"], ["Grassland","Agriculture"],
+        ["Upland","Grassland"], ["Grassland","Upland"],
+        ["Coastal","Freshwater"], ["Freshwater","Coastal"]
+      ];
+      for (const [a,b] of pairs) {
+        if (guess === a && t.has(b)) return 'partial';
+      }
+      return 'miss';
+    }
+
+    // State
+    const state = {
+      target: null,
+      guesses: [],
+      maxGuesses: 6,
+      difficulty: "Normal",
+      finished: false
+    };
+
+    // Elements
+    const el = {
+      newGameBtn: document.getElementById('newGameBtn'),
+      difficultyBtn: document.getElementById('difficultyBtn'),
+      difficultyLabel: document.getElementById('difficultyLabel'),
+      statusText: document.getElementById('statusText'),
+      submitBtn: document.getElementById('submitBtn'),
+      speciesInput: document.getElementById('speciesInput'),
+      comboList: document.getElementById('comboList'),
+      foodSelect: document.getElementById('foodSelect'),
+      sizeSelect: document.getElementById('sizeSelect'),
+      feetSelect: document.getElementById('feetSelect'),
+      habSelect: document.getElementById('habSelect'),
+      speciesPill: document.getElementById('speciesPill'),
+      speciesText: document.getElementById('speciesText'),
+      speciesDesc: document.getElementById('speciesDesc'),
+      foodPill: document.getElementById('foodPill'),
+      foodText: document.getElementById('foodText'),
+      foodDesc: document.getElementById('foodDesc'),
+      sizePill: document.getElementById('sizePill'),
+      sizeText: document.getElementById('sizeText'),
+      sizeDesc: document.getElementById('sizeDesc'),
+      feetPill: document.getElementById('feetPill'),
+      feetText: document.getElementById('feetText'),
+      feetDesc: document.getElementById('feetDesc'),
+      habPill: document.getElementById('habPill'),
+      habText: document.getElementById('habText'),
+      habDesc: document.getElementById('habDesc'),
+      rows: document.getElementById('rows'),
+      hintBox: document.getElementById('hintBox'),
+      resultBox: document.getElementById('resultBox')
+    };
+
+    // Populate selects
+    function fillSelect(select, options) {
+      for (const key of Object.keys(options)) {
+        const opt = document.createElement('option');
+        opt.value = key; opt.textContent = key;
+        select.appendChild(opt);
+      }
+    }
+    fillSelect(el.foodSelect, FOOD_TYPES);
+    fillSelect(el.sizeSelect, SIZES);
+    fillSelect(el.feetSelect, FEET);
+    fillSelect(el.habSelect, HABITATS);
+
+    // Autocomplete for species
+    function normalize(s) { return s.trim().toLowerCase(); }
+    function openCombo() {
+      const q = normalize(el.speciesInput.value);
+      const pool = [...COMMONS, ...SCIENTIFICS];
+      const options = pool
+        .filter(n => normalize(n).includes(q))
+        .slice(0, 20);
+      el.comboList.innerHTML = options
+        .map(n => `<div class="combo-item" role="option" data-name="${n}">${n}</div>`)
+        .join('');
+      el.comboList.classList.toggle('open', options.length > 0 && q.length > 0);
+    }
+    el.comboList.addEventListener('click', (e) => {
+      const item = e.target.closest('.combo-item');
+      if (!item) return;
+      el.speciesInput.value = item.dataset.name;
+      el.comboList.classList.remove('open');
+      el.speciesInput.focus();
+    });
+    document.addEventListener('click', (e) => {
+      if (!el.comboList.contains(e.target) && e.target !== el.speciesInput) {
+        el.comboList.classList.remove('open');
+      }
+    });
+    el.speciesInput.addEventListener('input', openCombo);
+    el.speciesInput.addEventListener('focus', openCombo);
+    el.speciesInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); handleGuess(); }
+    });
+
+    function randBird() { return BIRDS[Math.floor(Math.random() * BIRDS.length)]; }
+
+    function setPill(pillEl, textEl, descEl, label, status, descMap) {
+      textEl.textContent = label || "—";
+      if (descEl && descMap) descEl.textContent = label ? (descMap[label] || "") : "";
+      const dot = pillEl.querySelector('.dot');
+      pillEl.classList.remove('match','partial','miss');
+      dot.style.background = '#3a475a';
+      if (status === 'match') { pillEl.classList.add('match'); dot.style.background = '#21bf73'; }
+      else if (status === 'partial') { pillEl.classList.add('partial'); dot.style.background = '#ffcc00'; }
+      else if (status === 'miss') { pillEl.classList.add('miss'); dot.style.background = '#ff4d4f'; }
+    }
+
+    function resetPills() {
+      setPill(el.speciesPill, el.speciesText, el.speciesDesc, null, null, null);
+      setPill(el.foodPill, el.foodText, el.foodDesc, null, null, FOOD_TYPES);
+      setPill(el.sizePill, el.sizeText, el.sizeDesc, null, null, SIZES);
+      setPill(el.feetPill, el.feetText, el.feetDesc, null, null, FEET);
+      setPill(el.habPill, el.habText, el.habDesc, null, null, HABITATS);
+      el.speciesDesc.textContent = "Guess the exact species (common or scientific).";
+    }
+
+    function startGame() {
+      state.target = randBird();
+      state.guesses = [];
+      state.finished = false;
+      el.rows.innerHTML = '';
+      el.resultBox.style.display = 'none';
+      el.hintBox.style.display = 'none';
+      el.statusText.textContent = `${state.maxGuesses} guesses available`;
+      resetPills();
+      el.speciesInput.value = '';
+      el.foodSelect.selectedIndex = 0;
+      el.sizeSelect.selectedIndex = 0;
+      el.feetSelect.selectedIndex = 0;
+      el.habSelect.selectedIndex = 0;
+      el.submitBtn.disabled = false;
+      el.speciesInput.focus();
+    }
+
+    function toggleDifficulty() {
+      state.difficulty = state.difficulty === "Normal" ? "Easy" : "Normal";
+      el.difficultyLabel.textContent = state.difficulty;
+    }
+
+    function speciesStatus(guessBird, target) {
+      if (!guessBird) return 'miss';
+      return (guessBird.common === target.common || guessBird.name === target.name) ? 'match' : 'miss';
+    }
+
+    function renderRow(entry) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <div class="cell ${entry.score.speciesClass}">
+          <div class="name">
+            <strong>${entry.speciesLabel}</strong>
+            <span class="sci">${entry.speciesSci || ''}</span>
+          </div>
+        </div>
+        <div class="cell ${entry.score.foodClass}"><strong>Food</strong> <span>${entry.food}</span></div>
+        <div class="cell ${entry.score.sizeClass}"><strong>Size</strong> <span>${entry.size}</span></div>
+        <div class="cell ${entry.score.feetClass}"><strong>Feet</strong> <span>${entry.feet}</span></div>
+        <div class="cell ${entry.score.habClass}"><strong>Habitat</strong> <span>${entry.habitat}</span></div>
+      `;
+      el.rows.prepend(row);
+    }
+
+    function updateSummaryPills(score, entry) {
+      setPill(el.speciesPill, el.speciesText, el.speciesDesc, entry.speciesLabel, score.speciesStatus, null);
+      setPill(el.foodPill, el.foodText, el.foodDesc, entry.food, score.foodStatus, FOOD_TYPES);
+      setPill(el.sizePill, el.sizeText, el.sizeDesc, entry.size, score.sizeStatus, SIZES);
+      setPill(el.feetPill, el.feetText, el.feetDesc, entry.feet, score.feetStatus, FEET);
+      setPill(el.habPill, el.habText, el.habDesc, entry.habitat, score.habStatus, HABITATS);
+    }
+
+    function nextHints() {
+      const g = state.guesses.length;
+      const t = state.target;
+      const easy = state.difficulty === "Easy";
+
+      if (g >= 3 && !state.finished) {
+        const hint1 = `One target habitat is ${t.habitat[0]}.`;
+        el.hintBox.textContent = `Hint: ${hint1}`;
+        el.hintBox.style.display = 'block';
+      }
+      if (g >= 5 && !state.finished) {
+        const hint2 = `Target feet: ${t.feet}${easy ? ` · Size: ${t.size}` : ''}`;
+        el.hintBox.textContent += `\nMore: ${hint2}`;
+      }
+    }
+
+    function endGame(won) {
+      state.finished = true;
+      el.submitBtn.disabled = true;
+      el.resultBox.style.display = 'block';
+      const t = state.target;
+      el.resultBox.textContent = won
+        ? `Perfect! The bird was ${t.common} (${t.name}).`
+        : `Round over. The bird was ${t.common} (${t.name}). Click “New bird” to try another.`;
+      el.statusText.textContent = won ? 'You guessed it!' : 'Round finished';
+    }
+
+    function handleGuess() {
+      if (state.finished) return;
+
+      const speciesRaw = normalize(el.speciesInput.value);
+      const foodVal = el.foodSelect.value || "";
+      const sizeVal = el.sizeSelect.value || "";
+      const feetVal = el.feetSelect.value || "";
+      const habVal = el.habSelect.value || "";
+
+      if (!speciesRaw || !foodVal || !sizeVal || !feetVal || !habVal) {
+        el.statusText.textContent = 'Enter species and select all four categories before guessing.';
+        return;
+      }
+
+      const guessBird = INDEX_COMMON.get(speciesRaw) || INDEX_SCI.get(speciesRaw) ||
+        BIRDS.find(b => normalize(b.common) === speciesRaw || normalize(b.name) === speciesRaw);
+
+      const speciesSt = speciesStatus(guessBird, state.target);
+      const fs = foodStatus(foodVal, state.target.food);
+      const ss = sizeStatus(sizeVal, state.target.size);
+      const ps = feetStatus(feetVal, state.target.feet);
+      const hs = habitatStatus(habVal, state.target.habitat);
+
+      const score = {
+        speciesStatus: speciesSt,
+        foodStatus: fs, sizeStatus: ss, feetStatus: ps, habStatus: hs,
+        speciesClass: speciesSt, foodClass: fs, sizeClass: ss, feetClass: ps, habClass: hs
+      };
+
+      const entry = {
+        speciesLabel: guessBird ? guessBird.common : el.speciesInput.value,
+        speciesSci: guessBird ? guessBird.name : '',
+        food: foodVal, size: sizeVal, feet: feetVal, habitat: habVal,
+        score
+      };
+
+      state.guesses.push(entry);
+      renderRow(entry);
+      updateSummaryPills(score, entry);
+
+      const won = (speciesSt === 'match' && fs === 'match' && ss === 'match' && ps === 'match' && hs === 'match');
+      if (won) { endGame(true); return; }
+      if (state.guesses.length >= state.maxGuesses) { endGame(false); return; }
+
+      el.statusText.textContent = `${state.maxGuesses - state.guesses.length} guesses remaining`;
+      nextHints();
+    }
+
+    // Events
+    document.getElementById('newGameBtn').addEventListener('click', startGame);
+    document.getElementById('difficultyBtn').addEventListener('click', toggleDifficulty);
+    document.getElementById('submitBtn').addEventListener('click', handleGuess);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); handleGuess(); }
+    });
+
+    // Init
+    startGame();
+  </script>
+</body>
+</html>
