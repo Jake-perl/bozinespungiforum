@@ -1,88 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-   <url>
-      <loc>https://bozinespungiforum.net/</loc>
-      <lastmod>2025-10-06</lastmod>
-      <priority>1.0</priority>
-   </url>
+  <!-- MAIN -->
+  <url>
+    <loc>https://bozinespungiforum.net/</loc>
+    <lastmod>2025-12-10</lastmod>
+    <priority>1.0</priority>
+  </url>
 
-   <url>
-      <loc>https://bozinespungiforum.net/mainbozkirtan</loc>
-      <lastmod>2025-11-16</lastmod>
-      <priority>0.9</priority>
-   </url>
+  <!-- HIGHEST PRIORITY -->
+  <url>
+    <loc>https://bozinespungiforum.net/boz</loc>
+    <lastmod>2025-12-10</lastmod>
+    <priority>0.95</priority>
+  </url>
 
-   <url>
-      <loc>https://bozinespungiforum.net/bozcop1.html</loc>
-      <lastmod>2025-11-16</lastmod>
-      <priority>0.7</priority>
-   </url>
+  <url>
+    <loc>https://bozinespungiforum.net/bozmanmax</loc>
+    <lastmod>2025-12-10</lastmod>
+    <priority>0.95</priority>
+  </url>
 
-   <url>
-      <loc>https://bozinespungiforum.net/bozloreindex.html</loc>
-      <lastmod>2025-11-16</lastmod>
-      <priority>0.8</priority>
-   </url>
+  <!-- HIGH -->
+  <url><loc>https://bozinespungiforum.net/mainbozkirtan</loc><lastmod>2025-12-10</lastmod><priority>0.9</priority></url>
+  <url><loc>https://bozinespungiforum.net/forum</loc><lastmod>2025-12-10</lastmod><priority>0.9</priority></url>
 
-   <url>
-      <loc>https://bozinespungiforum.net/bozpeoplezone.html</loc>
-      <lastmod>2025-11-16</lastmod>
-      <priority>0.8</priority>
-   </url>
+  <!-- MID -->
+  <url><loc>https://bozinespungiforum.net/bozloreindex</loc><lastmod>2025-12-10</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bozinespungiforum.net/bozpeoplezone</loc><lastmod>2025-12-10</lastmod><priority>0.8</priority></url>
 
-   <url>
-      <loc>https://bozinespungiforum.net/coderrrrrrrrr55ttthhbozbozbozbozkirkirkirkirkirkirkirkirkirkirkirkirkir444555777ffggttt</loc>
-      <lastmod>2025-11-16</lastmod>
-      <priority>0.3</priority>
-   </url>
+  <!-- LOWER-MID -->
+  <url><loc>https://bozinespungiforum.net/games</loc><lastmod>2025-12-10</lastmod><priority>0.7</priority></url>
+  <url><loc>https://bozinespungiforum.net/bozcop1</loc><lastmod>2025-12-10</lastmod><priority>0.7</priority></url>
+  <url><loc>https://bozinespungiforum.net/dictionary</loc><lastmod>2025-12-10</lastmod><priority>0.7</priority></url>
+  <url><loc>https://bozinespungiforum.net/esgmain</loc><lastmod>2025-12-10</lastmod><priority>0.7</priority></url>
 
-   <url>
-      <loc>https://bozinespungiforum.net/dictionary.html</loc>
-      <lastmod>2025-11-16</lastmod>
-      <priority>0.7</priority>
-   </url>
+  <!-- GENERAL -->
+  <url><loc>https://bozinespungiforum.net/tetris</loc><lastmod>2025-12-10</lastmod><priority>0.6</priority></url>
+  <url><loc>https://bozinespungiforum.net/bozmaze</loc><lastmod>2025-12-10</lastmod><priority>0.6</priority></url>
+  <url><loc>https://bozinespungiforum.net/bozmanmax2</loc><lastmod>2025-12-10</lastmod><priority>0.6</priority></url>
+  <url><loc>https://bozinespungiforum.net/bozmanmax3</loc><lastmod>2025-12-10</lastmod><priority>0.6</priority></url>
+  <url><loc>https://bozinespungiforum.net/bozmanmax4</loc><lastmod>2025-12-10</lastmod><priority>0.6</priority></url>
+  <url><loc>https://bozinespungiforum.net/dndcam</loc><lastmod>2025-12-10</lastmod><priority>0.6</priority></url>
+  <url><loc>https://bozinespungiforum.net/dndcm</loc><lastmod>2025-12-10</lastmod><priority>0.6</priority></url>
 
-   <url>
-      <loc>https://bozinespungiforum.net/formulae.html</loc>
-      <lastmod>2025-09-18</lastmod>
-      <priority>0.6</priority>
-   </url>
+  <!-- NORMAL -->
+  <url><loc>https://bozinespungiforum.net/help</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
+  <url><loc>https://bozinespungiforum.net/index</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
+  <url><loc>https://bozinespungiforum.net/jake</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
+  <url><loc>https://bozinespungiforum.net/addmore</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
+  <url><loc>https://bozinespungiforum.net/auth</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
+  <url><loc>https://bozinespungiforum.net/block</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
+  <url><loc>https://bozinespungiforum.net/bzsflogin</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
+  <url><loc>https://bozinespungiforum.net/essence</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
+  <url><loc>https://bozinespungiforum.net/games</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
+  <url><loc>https://bozinespungiforum.net/wordle</loc><lastmod>2025-12-10</lastmod><priority>0.5</priority></url>
 
-   <url>
-      <loc>https://bozinespungiforum.net/forum.html</loc>
-      <lastmod>2025-09-17</lastmod>
-      <priority>0.9</priority>
-   </url>
+  <!-- LOW -->
+  <url><loc>https://bozinespungiforum.net/login</loc><lastmod>2025-12-10</lastmod><priority>0.4</priority></url>
+  <url><loc>https://bozinespungiforum.net/modern</loc><lastmod>2025-12-10</lastmod><priority>0.4</priority></url>
+  <url><loc>https://bozinespungiforum.net/whatisaboz</loc><lastmod>2025-12-10</lastmod><priority>0.4</priority></url>
 
-   <url>
-      <loc>https://bozinespungiforum.net/login.html</loc>
-      <lastmod>2025-09-14</lastmod>
-      <priority>0.3</priority>
-   </url>
-
-   <url>
-      <loc>https://bozinespungiforum.net/modern.html</loc>
-      <lastmod>2025-09-21</lastmod>
-      <priority>0.6</priority>
-   </url>
-
-   <url>
-      <loc>https://bozinespungiforum.net/secretcctjhyaf.html</loc>
-      <lastmod>2025-09-16</lastmod>
-      <priority>0.1</priority>
-   </url>
-
-   <url>
-      <loc>https://bozinespungiforum.net/whatisaboz.html</loc>
-      <lastmod>2025-11-24</lastmod>
-      <priority>0.3</priority>
-   </url>
-
-   <url>
-      <loc>https://bozinespungiforum.net/esgmain</loc>
-      <lastmod>2025-12-04</lastmod>
-      <priority>0.3</priority>
-   </url>
+  <!-- VERY LOW -->
+  <url><loc>https://bozinespungiforum.net/secretcctjhyaf</loc><lastmod>2025-12-10</lastmod><priority>0.3</priority></url>
+  <url><loc>https://bozinespungiforum.net/coderrrrrrrrr55ttthhbozbozbozbozkirkirkirkirkirkirkirkirkirkirkirkirkir444555777ffggttt</loc><lastmod>2025-12-10</lastmod><priority>0.2</priority></url>
 
 </urlset>
