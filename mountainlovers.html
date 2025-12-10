@@ -1,0 +1,1925 @@
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Kingdom Lords — Multi-Region Castle Defense</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --bg: linear-gradient(135deg, #1a2980, #26d0ce);
+    --panel: rgba(20, 25, 45, 0.85);
+    --accent: #ffb347;
+    --wood: #8b4513;
+    --stone: #708090;
+    --metal: #4682b4;
+  }
+ 
+  * { box-sizing: border-box; }
+ 
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
+    overflow: hidden;
+  }
+ 
+  #wrap {
+    position: relative;
+    height: 100vh;
+    background: var(--bg);
+  }
+ 
+  canvas {
+    display: block;
+    background: #0a1929;
+    cursor: crosshair;
+  }
+ 
+  .panel {
+    position: absolute;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--panel);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+ 
+  #ui {
+    left: 20px;
+    top: 20px;
+    width: 280px;
+    z-index: 10;
+  }
+ 
+  #ui h1 {
+    margin: 0 0 12px 0;
+    font-size: 24px;
+    color: var(--accent);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+ 
+  .resource {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+  }
+ 
+  .wood { color: #deb887; }
+  .stone { color: #c0c0c0; }
+  .metal { color: #63b3ff; }
+ 
+  #buildMenu {
+    left: 20px;
+    bottom: 20px;
+    width: 340px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    z-index: 10;
+  }
+ 
+  .buildBtn {
+    padding: 10px 6px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background: rgba(40, 50, 80, 0.8);
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    text-align: center;
+  }
+ 
+  .buildBtn:hover {
+    background: rgba(60, 70, 100, 0.9);
+    transform: translateY(-2px);
+  }
+ 
+  .buildBtn.active {
+    border-color: var(--accent);
+    background: rgba(255, 179, 71, 0.15);
+    box-shadow: 0 0 12px rgba(255, 179, 71, 0.3);
+  }
+ 
+  .hotkey {
+    display: block;
+    font-size: 10px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+ 
+  #minimap {
+    right: 20px;
+    bottom: 20px;
+    width: 200px;
+    height: 150px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    z-index: 10;
+  }
+ 
+  #wavePanel {
+    right: 20px;
+    top: 20px;
+    width: 240px;
+    text-align: right;
+    z-index: 10;
+  }
+ 
+  .waveTimer {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(255, 179, 71, 0.5);
+    margin: 8px 0;
+  }
+ 
+  #loadingScreen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, #0a1929 0%, #050a14 100%);
+    z-index: 100;
+  }
+ 
+  #rules {
+    width: 800px;
+    max-width: 90%;
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    padding: 32px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+ 
+  #rules h1 {
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+ 
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+  }
+ 
+  .resource-card {
+    padding: 16px;
+    border-radius: 10px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+  }
+ 
+  .resource-card.wood { border-top: 4px solid #deb887; }
+  .resource-card.stone { border-top: 4px solid #c0c0c0; }
+  .resource-card.metal { border-top: 4px solid #63b3ff; }
+ 
+  button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(45deg, #ff8a00, #ffb347);
+    color: #111;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-size: 16px;
+  }
+ 
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 179, 71, 0.4);
+  }
+ 
+  #deathOverlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 50;
+  }
+ 
+  #deathCard {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    padding: 32px;
+    border-radius: 16px;
+    text-align: center;
+    width: 400px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+ 
+  .instructions {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 12px;
+    opacity: 0.8;
+  }
+ 
+  @media (max-width: 768px) {
+    #ui, #buildMenu, #wavePanel, #minimap {
+      transform: scale(0.9);
+      transform-origin: top left;
+    }
+   
+    #buildMenu {
+      left: 10px;
+      bottom: 10px;
+      width: 300px;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="1280" height="720" style="width: 967px; height: 543.938px;"></canvas>
+</div>
+
+<!-- UI Panels -->
+<div id="ui" class="panel">
+  <h1>Kingdom Lords</h1>
+  <div class="resource">
+    <span class="wood">Wood</span>
+    <span id="wood">37</span>
+  </div>
+  <div class="resource">
+    <span class="stone">Stone</span>
+    <span id="stone">25</span>
+  </div>
+  <div class="resource">
+    <span class="metal">Metal</span>
+    <span id="metal">0</span>
+  </div>
+  <div style="margin-top: 12px; padding: 8px; background: rgba(255, 50, 50, 0.1); border-radius: 6px;">
+    HP: <span id="hp">100</span>
+  </div>
+  <div class="instructions">
+    WASD: Move • 1-6: Build • Space: Select unit • R: Repair
+  </div>
+</div>
+
+<div id="buildMenu" class="panel"><button class="buildBtn">
+      <span class="hotkey">1</span>
+      Palisade Wall<br>
+      <small style="font-size:10px;opacity:0.8">
+        W:15 S:0 M:0
+      </small>
+    </button><button class="buildBtn">
+      <span class="hotkey">2</span>
+      Watch Tower<br>
+      <small style="font-size:10px;opacity:0.8">
+        W:25 S:10 M:0
+      </small>
+    </button><button class="buildBtn">
+      <span class="hotkey">3</span>
+      Barracks<br>
+      <small style="font-size:10px;opacity:0.8">
+        W:40 S:20 M:5
+      </small>
+    </button><button class="buildBtn">
+      <span class="hotkey">4</span>
+      Stables<br>
+      <small style="font-size:10px;opacity:0.8">
+        W:50 S:30 M:20
+      </small>
+    </button><button class="buildBtn active">
+      <span class="hotkey">5</span>
+      Archery Range<br>
+      <small style="font-size:10px;opacity:0.8">
+        W:35 S:15 M:10
+      </small>
+    </button><button class="buildBtn">
+      <span class="hotkey">6</span>
+      Resource Depot<br>
+      <small style="font-size:10px;opacity:0.8">
+        W:20 S:10 M:0
+      </small>
+    </button></div>
+
+<div id="minimap" class="panel"><canvas width="200" height="150" style="width: 100%; height: 100%;"></canvas></div>
+
+<div id="wavePanel" class="panel">
+  <div><b>REGION DEFENSE</b></div>
+  <div>Wave: <span id="waveNum">2</span></div>
+  <div>Next Attack:</div>
+  <div class="waveTimer"><span id="waveTimer">17</span>s</div>
+  <div>Enemies: <span id="enemiesLeft">26</span></div>
+</div>
+
+<!-- Loading / Rules Screen -->
+<div id="loadingScreen" style="display: none;">
+  <div id="rules">
+    <h1>KINGDOM LORDS</h1>
+    <p>Build your kingdom across different regions, gather resources, and defend against monstrous hordes!</p>
+   
+    <div class="resource-grid">
+      <div class="resource-card wood">
+        <h3>WOOD</h3>
+        <p>Forest Region</p>
+        <p>Build structures, train units</p>
+      </div>
+      <div class="resource-card stone">
+        <h3>STONE</h3>
+        <p>Mountain Region</p>
+        <p>Strong defenses, upgrades</p>
+      </div>
+      <div class="resource-card metal">
+        <h3>METAL</h3>
+        <p>Mines Region</p>
+        <p>Advanced units, weapons</p>
+      </div>
+    </div>
+   
+    <h3>CONTROLS</h3>
+    <ul>
+      <li><strong>1-6:</strong> Select building type</li>
+      <li><strong>Click:</strong> Place building (needs resources)</li>
+      <li><strong>WASD:</strong> Move character</li>
+      <li><strong>R:</strong> Repair selected structure</li>
+      <li><strong>Space:</strong> Select nearest unit</li>
+    </ul>
+   
+    <h3>ENEMIES</h3>
+    <p>Early waves: Golems, Orcs • Mid waves: Trolls, Giants • Late waves: Dragons, Demons</p>
+   
+    <div style="text-align: center; margin-top: 32px;">
+      <button id="startBtn">BEGIN CONQUEST</button>
+    </div>
+  </div>
+</div>
+
+<!-- Death overlay -->
+<div id="deathOverlay" style="display: none;">
+  <div id="deathCard">
+    <h2 style="color: #ff5555;">KINGDOM FALLEN</h2>
+    <p id="deathMsg">Your kingdom fell after 3 waves!</p>
+    <div style="margin: 20px 0; padding: 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+      <div>Survived Waves: <span id="finalWave">3</span></div>
+      <div>Structures Built: <span id="finalStructures">17</span></div>
+    </div>
+    <button id="respawnBtn">REBUILD KINGDOM</button>
+  </div>
+</div>
+
+<script>
+// ====== CONFIGURATION ======
+const CONFIG = {
+  worldW: 3600,
+  worldH: 2400,
+  playerSpeed: 4.5,
+  gatherRange: 60,
+  buildRange: 220,
+  tileSize: 80,
+  waveInterval: 30, // 30 seconds between waves
+  regions: 5
+};
+
+// ====== REGIONS ======
+const REGIONS = [
+  { name: "Central Plains", color: "#4a7c59", x: 0.5, y: 0.5, resource: "wood", density: 1.0 },
+  { name: "Forest", color: "#2d5a27", x: 0.2, y: 0.2, resource: "wood", density: 1.5 },
+  { name: "Mountains", color: "#5d5d5d", x: 0.8, y: 0.2, resource: "stone", density: 1.2 },
+  { name: "Mines", color: "#3a506b", x: 0.2, y: 0.8, resource: "metal", density: 1.0 },
+  { name: "Swamp", color: "#2e4a3b", x: 0.8, y: 0.8, resource: "wood", density: 0.8 }
+];
+
+// ====== STRUCTURES ======
+const STRUCTURES = {
+  wall: {
+    name: 'Palisade Wall',
+    cost: { wood: 15, stone: 0, metal: 0 },
+    w: 50, h: 50,
+    hp: 250, maxHp: 250,
+    level: 1, maxLevel: 3,
+    upgrades: [
+      { cost: { wood: 30, stone: 10 }, hp: 350 },
+      { cost: { wood: 50, stone: 30, metal: 5 }, hp: 500 }
+    ],
+    desc: 'Basic wooden defense',
+    hotkey: '1'
+  },
+  tower: {
+    name: 'Watch Tower',
+    cost: { wood: 25, stone: 10, metal: 0 },
+    w: 60, h: 60,
+    hp: 400, maxHp: 400,
+    level: 1, maxLevel: 3,
+    upgrades: [
+      { cost: { wood: 40, stone: 25 }, hp: 550, range: 200 },
+      { cost: { wood: 60, stone: 40, metal: 15 }, hp: 750, range: 250 }
+    ],
+    range: 180,
+    fireRate: 1200,
+    dmg: 15,
+    desc: 'Shoots arrows at enemies',
+    hotkey: '2'
+  },
+  barracks: {
+    name: 'Barracks',
+    cost: { wood: 40, stone: 20, metal: 5 },
+    w: 70, h: 70,
+    hp: 300, maxHp: 300,
+    level: 1, maxLevel: 3,
+    trainRate: 5000,
+    trains: 'soldier',
+    desc: 'Trains foot soldiers',
+    hotkey: '3'
+  },
+  stables: {
+    name: 'Stables',
+    cost: { wood: 50, stone: 30, metal: 20 },
+    w: 70, h: 70,
+    hp: 350, maxHp: 350,
+    level: 1, maxLevel: 2,
+    trainRate: 7000,
+    trains: 'knight',
+    desc: 'Trains mounted knights',
+    hotkey: '4'
+  },
+  archery: {
+    name: 'Archery Range',
+    cost: { wood: 35, stone: 15, metal: 10 },
+    w: 65, h: 65,
+    hp: 280, maxHp: 280,
+    level: 1, maxLevel: 3,
+    trainRate: 6000,
+    trains: 'archer',
+    desc: 'Trains archers',
+    hotkey: '5'
+  },
+  resource: {
+    name: 'Resource Depot',
+    cost: { wood: 20, stone: 10, metal: 0 },
+    w: 60, h: 60,
+    hp: 200, maxHp: 200,
+    level: 1, maxLevel: 2,
+    produces: { wood: 0.5, stone: 0.3, metal: 0.1 },
+    desc: 'Generates resources',
+    hotkey: '6'
+  }
+};
+
+// ====== UNIT TYPES ======
+const UNIT_TYPES = {
+  soldier: {
+    name: 'Foot Soldier',
+    cost: { wood: 10, stone: 0, metal: 5 },
+    hp: 80, atk: 12, speed: 1.8,
+    range: 25, color: '#4a7cb3',
+    sprite: 'sword'
+  },
+  archer: {
+    name: 'Archer',
+    cost: { wood: 15, stone: 0, metal: 3 },
+    hp: 60, atk: 10, speed: 2.0,
+    range: 120, color: '#3a8c6e',
+    sprite: 'bow'
+  },
+  knight: {
+    name: 'Knight',
+    cost: { wood: 25, stone: 10, metal: 15 },
+    hp: 120, atk: 18, speed: 2.2,
+    range: 30, color: '#9d4edd',
+    sprite: 'horse'
+  }
+};
+
+// ====== ENEMY TYPES ======
+const ENEMY_TYPES = {
+  golem: {
+    name: 'Stone Golem',
+    hp: 180, atk: 15, speed: 0.7,
+    color: '#6d6875', size: 28,
+    reward: { wood: 3, stone: 8, metal: 2 }
+  },
+  troll: {
+    name: 'Mountain Troll',
+    hp: 250, atk: 22, speed: 0.9,
+    color: '#4a7c59', size: 32,
+    reward: { wood: 5, stone: 12, metal: 4 }
+  },
+  dragon: {
+    name: 'Fire Dragon',
+    hp: 400, atk: 35, speed: 1.5,
+    color: '#ff6d00', size: 36,
+    reward: { wood: 10, stone: 20, metal: 15 }
+  },
+  orc: {
+    name: 'Orc Warrior',
+    hp: 100, atk: 10, speed: 1.2,
+    color: '#588157', size: 24,
+    reward: { wood: 2, stone: 3, metal: 1 }
+  },
+  giant: {
+    name: 'Frost Giant',
+    hp: 350, atk: 30, speed: 0.8,
+    color: '#a8dadc', size: 35,
+    reward: { wood: 8, stone: 18, metal: 10 }
+  }
+};
+
+// ====== WAVE PATTERNS ======
+const WAVE_PATTERNS = [
+  { level: 1, enemies: [{type:'golem',count:4},{type:'orc',count:6}] },
+  { level: 2, enemies: [{type:'orc',count:10},{type:'golem',count:6}] },
+  { level: 3, enemies: [{type:'troll',count:3},{type:'orc',count:8}] },
+  { level: 4, enemies: [{type:'troll',count:6},{type:'golem',count:8}] },
+  { level: 5, enemies: [{type:'giant',count:2},{type:'troll',count:5},{type:'orc',count:12}] },
+  { level: 6, enemies: [{type:'dragon',count:1},{type:'giant',count:3},{type:'troll',count:8}] },
+  { level: 7, enemies: [{type:'dragon',count:2},{type:'giant',count:4},{type:'troll',count:10}] }
+];
+
+// ====== CANVAS & UI ======
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const minimapEl = document.getElementById('minimap');
+const mmCanvas = document.createElement('canvas');
+mmCanvas.width = 200;
+mmCanvas.height = 150;
+mmCanvas.style.width = '100%';
+mmCanvas.style.height = '100%';
+minimapEl.appendChild(mmCanvas);
+const mmCtx = mmCanvas.getContext('2d');
+
+const woodEl = document.getElementById('wood');
+const stoneEl = document.getElementById('stone');
+const metalEl = document.getElementById('metal');
+const hpEl = document.getElementById('hp');
+const waveNumEl = document.getElementById('waveNum');
+const waveTimerEl = document.getElementById('waveTimer');
+const enemiesLeftEl = document.getElementById('enemiesLeft');
+
+const buildMenu = document.getElementById('buildMenu');
+const loadingScreen = document.getElementById('loadingScreen');
+const startBtn = document.getElementById('startBtn');
+const deathOverlay = document.getElementById('deathOverlay');
+const respawnBtn = document.getElementById('respawnBtn');
+const deathMsg = document.getElementById('deathMsg');
+const finalWaveEl = document.getElementById('finalWave');
+const finalStructuresEl = document.getElementById('finalStructures');
+
+// ====== GAME STATE ======
+const state = {
+  player: {
+    x: CONFIG.worldW/2,
+    y: CONFIG.worldH/2,
+    r: 16,
+    hp: 100,
+    maxHp: 100,
+    wood: 50,
+    stone: 25,
+    metal: 10,
+    alive: true,
+    selectedUnit: null
+  },
+  keys: {},
+  trees: [],
+  stones: [],
+  metals: [],
+  blocks: [],
+  enemies: [],
+  units: [],
+  arrows: [],
+  time: 0,
+  selectedBuild: null,
+  wave: {
+    level: 1,
+    number: 0,
+    nextIn: CONFIG.waveInterval,
+    active: false,
+    spawnQueue: [],
+    bossSpawned: false
+  },
+  regionMap: [],
+  resources: { wood: [], stone: [], metal: [] }
+};
+
+// ====== HELPER FUNCTIONS ======
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+function distXY(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+
+// ====== GENERATE WORLD ======
+function generateWorld() {
+  // Generate regions
+  const tileCols = Math.floor(CONFIG.worldW / CONFIG.tileSize);
+  const tileRows = Math.floor(CONFIG.worldH / CONFIG.tileSize);
+ 
+  for (let y = 0; y < tileRows; y++) {
+    state.regionMap[y] = [];
+    for (let x = 0; x < tileCols; x++) {
+      const wx = x * CONFIG.tileSize;
+      const wy = y * CONFIG.tileSize;
+     
+      // Determine region based on distance to region centers
+      let bestRegion = 0;
+      let bestDist = Infinity;
+     
+      for (let i = 0; i < REGIONS.length; i++) {
+        const region = REGIONS[i];
+        const dx = wx - (region.x * CONFIG.worldW);
+        const dy = wy - (region.y * CONFIG.worldH);
+        const d = dx * dx + dy * dy;
+       
+        if (d < bestDist) {
+          bestDist = d;
+          bestRegion = i;
+        }
+      }
+     
+      state.regionMap[y][x] = bestRegion;
+     
+      // Place resources based on region
+      const region = REGIONS[bestRegion];
+      if (Math.random() < 0.3 * region.density) {
+        const rx = wx + rand(20, CONFIG.tileSize - 20);
+        const ry = wy + rand(20, CONFIG.tileSize - 20);
+       
+        switch(region.resource) {
+          case 'wood':
+            state.trees.push({
+              x: rx, y: ry,
+              r: 24,
+              wood: 80 + Math.random() * 40,
+              type: 'tree',
+              region: bestRegion
+            });
+            state.resources.wood.push({ x: rx, y: ry });
+            break;
+          case 'stone':
+            state.stones.push({
+              x: rx, y: ry,
+              r: 22,
+              stone: 50 + Math.random() * 30,
+              type: 'stone',
+              region: bestRegion
+            });
+            state.resources.stone.push({ x: rx, y: ry });
+            break;
+          case 'metal':
+            state.metals.push({
+              x: rx, y: ry,
+              r: 20,
+              metal: 30 + Math.random() * 20,
+              type: 'metal',
+              region: bestRegion
+            });
+            state.resources.metal.push({ x: rx, y: ry });
+            break;
+        }
+      }
+    }
+  }
+ 
+  // Add some mountains and rivers
+  for (let i = 0; i < 8; i++) {
+    const x = rand(100, CONFIG.worldW - 100);
+    const y = rand(100, CONFIG.worldH - 100);
+    const size = rand(60, 150);
+   
+    state.blocks.push({
+      type: 'mountain',
+      x, y,
+      r: size,
+      hp: 9999 // Indestructible
+    });
+  }
+}
+
+// ====== DRAWING FUNCTIONS ======
+function drawTree(x, y, r, woodLeft) {
+  // Trunk
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(x - 6, y + 8, 12, 18);
+ 
+  // Foliage
+  const gradient = ctx.createRadialGradient(x, y - 8, 5, x, y - 8, r);
+  gradient.addColorStop(0, woodLeft > 0 ? '#7cfc00' : '#556b2f');
+  gradient.addColorStop(1, woodLeft > 0 ? '#228b22' : '#2f4f4f');
+ 
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const angle = (i * Math.PI * 2) / 5;
+    const px = x + Math.cos(angle) * r * 0.8;
+    const py = y - 8 + Math.sin(angle) * r * 0.8;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawStone(x, y, r, stoneLeft) {
+  ctx.fillStyle = stoneLeft > 0 ? '#a9a9a9' : '#696969';
+  ctx.beginPath();
+  ctx.moveTo(x - r, y - r * 0.5);
+  ctx.lineTo(x + r * 0.5, y - r);
+  ctx.lineTo(x + r, y + r * 0.5);
+  ctx.lineTo(x - r * 0.5, y + r);
+  ctx.closePath();
+  ctx.fill();
+ 
+  // Stone texture
+  ctx.strokeStyle = stoneLeft > 0 ? '#808080' : '#505050';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 4; i++) {
+    const angle = Math.PI * i / 2;
+    const sx = x + Math.cos(angle) * r * 0.3;
+    const sy = y + Math.sin(angle) * r * 0.3;
+    const ex = x + Math.cos(angle + Math.PI) * r * 0.3;
+    const ey = y + Math.sin(angle + Math.PI) * r * 0.3;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+  }
+}
+
+function drawMetal(x, y, r, metalLeft) {
+  // Metallic shine
+  const gradient = ctx.createRadialGradient(x, y, r * 0.3, x, y, r);
+  gradient.addColorStop(0, metalLeft > 0 ? '#add8e6' : '#778899');
+  gradient.addColorStop(1, metalLeft > 0 ? '#4682b4' : '#2f4f4f');
+ 
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+ 
+  // Crystal facets
+  ctx.strokeStyle = metalLeft > 0 ? '#e6f3ff' : '#a9a9a9';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 6; i++) {
+    const angle = (i * Math.PI) / 3;
+    const dx = Math.cos(angle) * r;
+    const dy = Math.sin(angle) * r;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + dx, y + dy);
+    ctx.stroke();
+  }
+}
+
+function drawPlayer(x, y, r) {
+  // Body
+  ctx.fillStyle = '#4169e1';
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+ 
+  // Shield
+  ctx.fillStyle = '#1e40af';
+  ctx.beginPath();
+  ctx.arc(x - r * 0.6, y, r * 0.5, 0, Math.PI * 2);
+  ctx.fill();
+ 
+  // Sword
+  ctx.fillStyle = '#c0c0c0';
+  ctx.fillRect(x + r * 0.4, y - r * 0.2, r * 0.8, r * 0.4);
+  ctx.fillRect(x + r * 1.1, y - r * 0.1, r * 0.2, r * 0.2);
+ 
+  // Helmet plume
+  ctx.fillStyle = '#ff5555';
+  ctx.beginPath();
+  ctx.moveTo(x, y - r * 1.2);
+  ctx.lineTo(x - r * 0.3, y - r * 1.8);
+  ctx.lineTo(x + r * 0.3, y - r * 1.8);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawSoldier(x, y, isSelected = false) {
+  // Body
+  ctx.fillStyle = isSelected ? '#ffd700' : '#4a7cb3';
+  ctx.beginPath();
+  ctx.arc(x, y, 10, 0, Math.PI * 2);
+  ctx.fill();
+ 
+  // Shield
+  ctx.fillStyle = '#1e3a8a';
+  ctx.beginPath();
+  ctx.arc(x - 6, y, 6, 0, Math.PI * 2);
+  ctx.fill();
+ 
+  // Spear
+  ctx.fillStyle = '#c0c0c0';
+  ctx.fillRect(x + 5, y - 2, 12, 4);
+}
+
+function drawArcher(x, y, isSelected = false) {
+  // Body
+  ctx.fillStyle = isSelected ? '#ffd700' : '#3a8c6e';
+  ctx.beginPath();
+  ctx.arc(x, y, 9, 0, Math.PI * 2);
+  ctx.fill();
+ 
+  // Bow
+  ctx.strokeStyle = '#8b4513';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(x + 8, y, 12, -Math.PI/4, Math.PI/4);
+  ctx.stroke();
+}
+
+function drawKnight(x, y, isSelected = false) {
+  // Horse body
+  ctx.fillStyle = isSelected ? '#ffd700' : '#9d4edd';
+  ctx.beginPath();
+  ctx.ellipse(x, y, 12, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+ 
+  // Knight on horse
+  ctx.fillStyle = '#4a148c';
+  ctx.beginPath();
+  ctx.arc(x, y - 8, 6, 0, Math.PI * 2);
+  ctx.fill();
+ 
+  // Lance
+  ctx.fillStyle = '#c0c0c0';
+  ctx.fillRect(x + 10, y - 4, 20, 3);
+}
+
+function drawEnemy(x, y, type, size) {
+  const enemyType = ENEMY_TYPES[type];
+  if (!enemyType) return;
+ 
+  ctx.fillStyle = enemyType.color;
+  ctx.beginPath();
+ 
+  switch(type) {
+    case 'golem':
+      // Square golem
+      ctx.fillRect(x - size, y - size, size * 2, size * 2);
+      // Eyes
+      ctx.fillStyle = '#ff5555';
+      ctx.fillRect(x - size/2, y - size/3, size/3, size/3);
+      ctx.fillRect(x + size/4, y - size/3, size/3, size/3);
+      break;
+     
+    case 'troll':
+      // Round troll
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+      // Club
+      ctx.fillStyle = '#8b4513';
+      ctx.fillRect(x + size, y - size/2, size * 0.8, size);
+      break;
+     
+    case 'dragon':
+      // Dragon shape
+      ctx.moveTo(x, y - size);
+      ctx.lineTo(x - size, y);
+      ctx.lineTo(x, y + size);
+      ctx.lineTo(x + size, y);
+      ctx.closePath();
+      ctx.fill();
+      // Wings
+      ctx.fillStyle = enemyType.color + '80';
+      ctx.beginPath();
+      ctx.ellipse(x - size * 0.7, y, size * 0.8, size * 1.5, Math.PI/4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(x + size * 0.7, y, size * 0.8, size * 1.5, -Math.PI/4, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+     
+    default:
+      // Default circle
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+  }
+}
+
+function drawStructure(b) {
+  const s = STRUCTURES[b.type];
+  if (!s) return;
+ 
+  // Shadow
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.fillRect(b.x - b.w/2 + 5, b.y - b.h/2 + 5, b.w, b.h);
+ 
+  // Main building
+  switch(b.type) {
+    case 'wall':
+      ctx.fillStyle = b.level >= 3 ? '#696969' : b.level >= 2 ? '#8b4513' : '#a0522d';
+      ctx.fillRect(b.x - b.w/2, b.y - b.h/2, b.w, b.h);
+      // Wooden spikes for level 1-2
+      if (b.level < 3) {
+        ctx.fillStyle = '#654321';
+        for (let i = 0; i < 3; i++) {
+          const tx = b.x - b.w/3 + i * (b.w/3);
+          ctx.beginPath();
+          ctx.moveTo(tx, b.y - b.h/2);
+          ctx.lineTo(tx - 3, b.y - b.h/2 - 10);
+          ctx.lineTo(tx + 3, b.y - b.h/2 - 10);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+      break;
+     
+    case 'tower':
+      ctx.fillStyle = b.level >= 3 ? '#708090' : b.level >= 2 ? '#696969' : '#8b4513';
+      // Tower base
+      ctx.fillRect(b.x - b.w/2, b.y - b.h/2, b.w, b.h);
+      // Tower top
+      ctx.fillStyle = '#2f4f4f';
+      ctx.fillRect(b.x - b.w/3, b.y - b.h/2 - 15, b.w * 0.66, 15);
+      // Arrow slits
+      ctx.fillStyle = '#000';
+      for (let i = 0; i < 2; i++) {
+        ctx.fillRect(b.x - b.w/4 + i * (b.w/2), b.y - b.h/4, 4, 10);
+      }
+      break;
+     
+    case 'barracks':
+      ctx.fillStyle = '#4a7cb3';
+      ctx.fillRect(b.x - b.w/2, b.y - b.h/2, b.w, b.h);
+      // Roof
+      ctx.fillStyle = '#8b4513';
+      ctx.beginPath();
+      ctx.moveTo(b.x - b.w/2, b.y - b.h/2);
+      ctx.lineTo(b.x + b.w/2, b.y - b.h/2);
+      ctx.lineTo(b.x, b.y - b.h/2 - 20);
+      ctx.closePath();
+      ctx.fill();
+      // Door
+      ctx.fillStyle = '#654321';
+      ctx.fillRect(b.x - 8, b.y + b.h/4, 16, 20);
+      break;
+     
+    case 'resource':
+      ctx.fillStyle = '#deb887';
+      ctx.fillRect(b.x - b.w/2, b.y - b.h/2, b.w, b.h);
+      // Resource piles
+      ctx.fillStyle = '#8b4513';
+      ctx.beginPath();
+      ctx.arc(b.x - 10, b.y + 5, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#708090';
+      ctx.beginPath();
+      ctx.arc(b.x + 10, b.y + 5, 8, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+  }
+ 
+  // HP Bar
+  const hpPercent = b.hp / (s.hp * (b.level || 1));
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+  ctx.fillRect(b.x - 30, b.y - b.h/2 - 12, 60, 8);
+  ctx.fillStyle = hpPercent > 0.6 ? '#4CAF50' : hpPercent > 0.3 ? '#FF9800' : '#F44336';
+  ctx.fillRect(b.x - 30, b.y - b.h/2 - 12, 60 * hpPercent, 8);
+ 
+  // Level indicator
+  if (b.level > 1) {
+    ctx.fillStyle = '#FFD700';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Lv' + b.level, b.x, b.y - b.h/2 - 18);
+  }
+}
+
+// ====== BUILD MENU ======
+function createBuildButtons() {
+  buildMenu.innerHTML = '';
+ 
+  Object.entries(STRUCTURES).forEach(([key, structure]) => {
+    const btn = document.createElement('button');
+    btn.className = 'buildBtn';
+    btn.innerHTML = `
+      <span class="hotkey">${structure.hotkey}</span>
+      ${structure.name}<br>
+      <small style="font-size:10px;opacity:0.8">
+        W:${structure.cost.wood} S:${structure.cost.stone} M:${structure.cost.metal || 0}
+      </small>
+    `;
+   
+    btn.onclick = () => {
+      if (state.selectedBuild === key) {
+        state.selectedBuild = null;
+        btn.classList.remove('active');
+        return;
+      }
+      state.selectedBuild = key;
+      document.querySelectorAll('.buildBtn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+   
+    buildMenu.appendChild(btn);
+  });
+}
+
+// ====== INPUT HANDLING ======
+window.addEventListener('keydown', e => {
+  const key = e.key.toLowerCase();
+  state.keys[key] = true;
+ 
+  // Hotkey building selection
+  if (key >= '1' && key <= '6') {
+    const index = parseInt(key) - 1;
+    const buildKeys = Object.keys(STRUCTURES);
+    if (index < buildKeys.length) {
+      state.selectedBuild = buildKeys[index];
+      document.querySelectorAll('.buildBtn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+    }
+  }
+ 
+  // Repair selected structure
+  if (key === 'r' && state.player.selectedUnit && state.player.selectedUnit.hp) {
+    const structure = state.player.selectedUnit;
+    const repairCost = Math.ceil((structure.maxHp - structure.hp) / 50);
+   
+    if (state.player.wood >= repairCost && structure.hp < structure.maxHp) {
+      structure.hp = Math.min(structure.maxHp, structure.hp + 50);
+      state.player.wood -= repairCost;
+    }
+  }
+ 
+  // Select nearest unit
+  if (key === ' ') {
+    let nearest = null;
+    let nearestDist = 100;
+   
+    state.units.forEach(unit => {
+      const d = dist(state.player, unit);
+      if (d < nearestDist) {
+        nearestDist = d;
+        nearest = unit;
+      }
+    });
+   
+    state.player.selectedUnit = nearest;
+  }
+});
+
+window.addEventListener('keyup', e => {
+  state.keys[e.key.toLowerCase()] = false;
+});
+
+canvas.addEventListener('click', e => {
+  if (!state.player.alive) return;
+ 
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const cam = camera();
+  const wx = cam.x + mx;
+  const wy = cam.y + my;
+ 
+  if (state.selectedBuild) {
+    placeStructure(state.selectedBuild, wx, wy);
+  } else {
+    // Select unit or structure
+    let selected = null;
+   
+    // Check units first
+    for (const unit of state.units) {
+      if (distXY(wx, wy, unit.x, unit.y) < 15) {
+        selected = unit;
+        break;
+      }
+    }
+   
+    // Check structures
+    if (!selected) {
+      for (const block of state.blocks) {
+        if (wx > block.x - block.w/2 && wx < block.x + block.w/2 &&
+            wy > block.y - block.h/2 && wy < block.y + block.h/2) {
+          selected = block;
+          break;
+        }
+      }
+    }
+   
+    state.player.selectedUnit = selected;
+  }
+});
+
+// ====== GAME FUNCTIONS ======
+function camera() {
+  const p = state.player;
+  return {
+    x: clamp(p.x - canvas.width/2, 0, CONFIG.worldW - canvas.width),
+    y: clamp(p.y - canvas.height/2, 0, CONFIG.worldH - canvas.height)
+  };
+}
+
+function placeStructure(key, wx, wy) {
+  const s = STRUCTURES[key];
+  if (!s) return;
+ 
+  // Check resources
+  if (state.player.wood < s.cost.wood ||
+      state.player.stone < s.cost.stone ||
+      state.player.metal < (s.cost.metal || 0)) {
+    return;
+  }
+ 
+  // Check build range
+  if (distXY(state.player.x, state.player.y, wx, wy) > CONFIG.buildRange) {
+    return;
+  }
+ 
+  // Check overlap
+  for (const b of state.blocks) {
+    if (Math.abs(b.x - wx) < (b.w/2 + s.w/2) &&
+        Math.abs(b.y - wy) < (b.h/2 + s.h/2)) {
+      return;
+    }
+  }
+ 
+  const block = {
+    type: key,
+    x: wx, y: wy,
+    w: s.w, h: s.h,
+    hp: s.hp,
+    maxHp: s.hp,
+    level: 1,
+    owner: 'player',
+    created: Date.now(),
+    lastFire: 0,
+    trainTimer: 0,
+    produceTimer: 0
+  };
+ 
+  // Copy structure properties
+  if (s.range) block.range = s.range;
+  if (s.fireRate) block.fireRate = s.fireRate;
+  if (s.dmg) block.dmg = s.dmg;
+  if (s.trainRate) block.trainRate = s.trainRate;
+  if (s.trains) block.trains = s.trains;
+  if (s.produces) block.produces = s.produces;
+ 
+  state.blocks.push(block);
+  state.player.wood -= s.cost.wood;
+  state.player.stone -= s.cost.stone;
+  state.player.metal -= (s.cost.metal || 0);
+ 
+  // Auto-select new building
+  state.player.selectedUnit = block;
+}
+
+function trainUnit(structure) {
+  if (!structure.trains || structure.trainTimer < structure.trainRate) return;
+ 
+  const unitType = UNIT_TYPES[structure.trains];
+  if (!unitType) return;
+ 
+  // Check resources
+  if (state.player.wood >= unitType.cost.wood &&
+      state.player.stone >= unitType.cost.stone &&
+      state.player.metal >= unitType.cost.metal) {
+   
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 50;
+    const unit = {
+      x: structure.x + Math.cos(angle) * distance,
+      y: structure.y + Math.sin(angle) * distance,
+      hp: unitType.hp,
+      maxHp: unitType.hp,
+      atk: unitType.atk,
+      speed: unitType.speed,
+      range: unitType.range,
+      type: structure.trains,
+      owner: 'player',
+      target: null,
+      lastAttack: 0
+    };
+   
+    state.units.push(unit);
+   
+    // Deduct resources
+    state.player.wood -= unitType.cost.wood;
+    state.player.stone -= unitType.cost.stone;
+    state.player.metal -= unitType.cost.metal;
+   
+    structure.trainTimer = 0;
+  }
+}
+
+function spawnEnemy(x, y, type) {
+  const enemyType = ENEMY_TYPES[type];
+  if (!enemyType) return;
+ 
+  const levelMultiplier = 1 + (state.wave.level - 1) * 0.15;
+ 
+  const enemy = {
+    x, y,
+    hp: enemyType.hp * levelMultiplier,
+    maxHp: enemyType.hp * levelMultiplier,
+    atk: enemyType.atk * levelMultiplier,
+    speed: enemyType.speed * (1 + (state.wave.level - 1) * 0.05),
+    type: type,
+    size: enemyType.size,
+    color: enemyType.color,
+    target: null,
+    lastAttack: 0,
+    reward: enemyType.reward
+  };
+ 
+  state.enemies.push(enemy);
+}
+
+// ====== WAVE SYSTEM ======
+function scheduleNextWave() {
+  state.wave.number++;
+  state.wave.active = true;
+  state.wave.bossSpawned = false;
+ 
+  const pattern = WAVE_PATTERNS[(state.wave.number - 1) % WAVE_PATTERNS.length];
+  const multiplier = 1 + Math.floor((state.wave.number - 1) / WAVE_PATTERNS.length) * 0.5;
+ 
+  const queue = [];
+  pattern.enemies.forEach(group => {
+    const count = Math.ceil(group.count * multiplier);
+    for (let i = 0; i < count; i++) {
+      queue.push(group.type);
+    }
+  });
+ 
+  // Add extra enemies for higher waves
+  if (state.wave.number > 5) {
+    for (let i = 0; i < Math.floor(state.wave.number / 3); i++) {
+      queue.push(Math.random() > 0.5 ? 'troll' : 'giant');
+    }
+  }
+ 
+  // Shuffle queue
+  for (let i = queue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [queue[i], queue[j]] = [queue[j], queue[i]];
+  }
+ 
+  state.wave.spawnQueue = queue;
+  waveNumEl.textContent = state.wave.number;
+}
+
+function tickWave(dt) {
+  if (state.wave.active) {
+    if (state.wave.spawnQueue.length > 0) {
+      state.wave.spawnTimer = (state.wave.spawnTimer || 0) - dt;
+      const interval = Math.max(400, 800 - state.wave.level * 20);
+     
+      if (state.wave.spawnTimer <= 0) {
+        const type = state.wave.spawnQueue.shift();
+       
+        // Spawn from random edge
+        const edge = Math.floor(rand(0, 4));
+        let x = 0, y = 0;
+       
+        switch(edge) {
+          case 0: x = rand(0, CONFIG.worldW); y = -50; break;
+          case 1: x = CONFIG.worldW + 50; y = rand(0, CONFIG.worldH); break;
+          case 2: x = rand(0, CONFIG.worldW); y = CONFIG.worldH + 50; break;
+          case 3: x = -50; y = rand(0, CONFIG.worldH); break;
+        }
+       
+        spawnEnemy(x, y, type);
+        state.wave.spawnTimer = interval;
+      }
+    } else {
+      // Wave finished
+      state.wave.active = false;
+      state.wave.nextIn = CONFIG.waveInterval;
+    }
+  } else {
+    // Countdown to next wave
+    state.wave.nextIn -= dt / 1000;
+    waveTimerEl.textContent = Math.max(0, Math.ceil(state.wave.nextIn));
+   
+    if (state.wave.nextIn <= 0) {
+      scheduleNextWave();
+    }
+  }
+ 
+  enemiesLeftEl.textContent = state.enemies.length + state.wave.spawnQueue.length;
+}
+
+// ====== UPDATE LOOP ======
+function update(dt) {
+  state.time += dt;
+  if (!state.player.alive) return;
+ 
+  // Player movement
+  let dx = 0, dy = 0;
+  if (state.keys['w'] || state.keys['arrowup']) dy -= 1;
+  if (state.keys['s'] || state.keys['arrowdown']) dy += 1;
+  if (state.keys['a'] || state.keys['arrowleft']) dx -= 1;
+  if (state.keys['d'] || state.keys['arrowright']) dx += 1;
+ 
+  const len = Math.hypot(dx, dy) || 1;
+  state.player.x += (dx / len) * CONFIG.playerSpeed;
+  state.player.y += (dy / len) * CONFIG.playerSpeed;
+ 
+  state.player.x = clamp(state.player.x, 0, CONFIG.worldW);
+  state.player.y = clamp(state.player.y, 0, CONFIG.worldH);
+ 
+  // Resource gathering
+  let nearestResource = null;
+  let nearestDist = CONFIG.gatherRange;
+  let resourceType = null;
+ 
+  // Check all resources
+  [...state.trees, ...state.stones, ...state.metals].forEach(resource => {
+    const d = distXY(state.player.x, state.player.y, resource.x, resource.y);
+    if (d < nearestDist) {
+      nearestDist = d;
+      nearestResource = resource;
+      resourceType = resource.type;
+    }
+  });
+ 
+  if (nearestResource && nearestDist < CONFIG.gatherRange) {
+    let gathered = false;
+   
+    switch(resourceType) {
+      case 'tree':
+        if (nearestResource.wood > 0) {
+          state.player.wood += 0.5 * (dt / 100);
+          nearestResource.wood -= 0.5 * (dt / 100);
+          gathered = true;
+        }
+        break;
+      case 'stone':
+        if (nearestResource.stone > 0) {
+          state.player.stone += 0.3 * (dt / 100);
+          nearestResource.stone -= 0.3 * (dt / 100);
+          gathered = true;
+        }
+        break;
+      case 'metal':
+        if (nearestResource.metal > 0) {
+          state.player.metal += 0.2 * (dt / 100);
+          nearestResource.metal -= 0.2 * (dt / 100);
+          gathered = true;
+        }
+        break;
+    }
+   
+    if (!gathered) {
+      nearestResource = null;
+    }
+  }
+ 
+  // Update structures
+  state.blocks.forEach(block => {
+    // Resource production
+    if (block.type === 'resource' && block.produces) {
+      block.produceTimer = (block.produceTimer || 0) + dt;
+      const interval = 1000;
+     
+      while (block.produceTimer >= interval) {
+        block.produceTimer -= interval;
+        if (block.produces.wood) state.player.wood += block.produces.wood;
+        if (block.produces.stone) state.player.stone += block.produces.stone;
+        if (block.produces.metal) state.player.metal += block.produces.metal;
+      }
+    }
+   
+    // Unit training
+    if (block.trainRate) {
+      block.trainTimer = (block.trainTimer || 0) + dt;
+      if (block.trainTimer >= block.trainRate) {
+        trainUnit(block);
+      }
+    }
+   
+    // Tower firing
+    if (block.type === 'tower') {
+      block.lastFire = (block.lastFire || 0) + dt;
+      if (block.lastFire >= block.fireRate) {
+        // Find target
+        let target = null;
+        let bestDist = block.range;
+       
+        state.enemies.forEach(enemy => {
+          const d = distXY(block.x, block.y, enemy.x, enemy.y);
+          if (d < bestDist) {
+            bestDist = d;
+            target = enemy;
+          }
+        });
+       
+        if (target) {
+          // Create arrow
+          state.arrows.push({
+            x: block.x,
+            y: block.y - 15,
+            tx: target.x,
+            ty: target.y,
+            dmg: block.dmg * (block.level || 1),
+            speed: 8,
+            life: 1000
+          });
+         
+          block.lastFire = 0;
+        }
+      }
+    }
+  });
+ 
+  // Update arrows
+  state.arrows.forEach((arrow, idx) => {
+    const dx = arrow.tx - arrow.x;
+    const dy = arrow.ty - arrow.y;
+    const dist = Math.hypot(dx, dy);
+   
+    if (dist < 10) {
+      // Hit target
+      state.enemies.forEach(enemy => {
+        if (distXY(arrow.x, arrow.y, enemy.x, enemy.y) < 20) {
+          enemy.hp -= arrow.dmg;
+        }
+      });
+      state.arrows.splice(idx, 1);
+    } else {
+      arrow.x += (dx / dist) * arrow.speed;
+      arrow.y += (dy / dist) * arrow.speed;
+      arrow.life -= dt;
+     
+      if (arrow.life <= 0) {
+        state.arrows.splice(idx, 1);
+      }
+    }
+  });
+ 
+  // Update units
+  state.units.forEach(unit => {
+    if (unit.hp <= 0) return;
+   
+    // Find target
+    if (!unit.target || unit.target.hp <= 0) {
+      let closest = null;
+      let closestDist = Infinity;
+     
+      state.enemies.forEach(enemy => {
+        const d = distXY(unit.x, unit.y, enemy.x, enemy.y);
+        if (d < closestDist && d < (unit.range || 9999)) {
+          closestDist = d;
+          closest = enemy;
+        }
+      });
+     
+      unit.target = closest;
+    }
+   
+    if (unit.target) {
+      const d = distXY(unit.x, unit.y, unit.target.x, unit.target.y);
+     
+      if (d <= (unit.range || 30)) {
+        // Attack
+        unit.lastAttack = (unit.lastAttack || 0) + dt;
+        if (unit.lastAttack >= 1000) {
+          unit.target.hp -= unit.atk;
+          unit.lastAttack = 0;
+        }
+      } else {
+        // Move toward target
+        const dx = unit.target.x - unit.x;
+        const dy = unit.target.y - unit.y;
+        const dist = Math.hypot(dx, dy) || 1;
+       
+        unit.x += (dx / dist) * unit.speed;
+        unit.y += (dy / dist) * unit.speed;
+      }
+    } else {
+      // Wander
+      unit.x += rand(-0.5, 0.5);
+      unit.y += rand(-0.5, 0.5);
+    }
+  });
+ 
+  // Update enemies
+  state.enemies.forEach(enemy => {
+    if (enemy.hp <= 0) {
+      // Drop resources
+      if (enemy.reward) {
+        state.player.wood += enemy.reward.wood || 0;
+        state.player.stone += enemy.reward.stone || 0;
+        state.player.metal += enemy.reward.metal || 0;
+      }
+      return;
+    }
+   
+    // Find target (prefer structures, then player)
+    if (!enemy.target || enemy.target.hp <= 0) {
+      let closest = state.player;
+      let closestDist = dist(state.player, enemy);
+      let closestIsStructure = false;
+     
+      state.blocks.forEach(block => {
+        const d = distXY(block.x, block.y, enemy.x, enemy.y);
+        if (d < closestDist) {
+          closestDist = d;
+          closest = block;
+          closestIsStructure = true;
+        }
+      });
+     
+      state.units.forEach(unit => {
+        const d = distXY(unit.x, unit.y, enemy.x, enemy.y);
+        if (d < closestDist) {
+          closestDist = d;
+          closest = unit;
+          closestIsStructure = false;
+        }
+      });
+     
+      enemy.target = closest;
+      enemy.targetIsStructure = closestIsStructure;
+    }
+   
+    if (enemy.target) {
+      const d = distXY(enemy.x, enemy.y, enemy.target.x, enemy.target.y);
+     
+      if (d <= 25) {
+        // Attack
+        enemy.lastAttack = (enemy.lastAttack || 0) + dt;
+        if (enemy.lastAttack >= 800) {
+          if (enemy.target.hp !== undefined) {
+            enemy.target.hp -= enemy.atk;
+           
+            // If attacking player
+            if (enemy.target === state.player) {
+              // Screen shake effect
+              canvas.style.transform = `translate(${rand(-5,5)}px, ${rand(-5,5)}px)`;
+              setTimeout(() => canvas.style.transform = '', 100);
+            }
+          }
+          enemy.lastAttack = 0;
+        }
+      } else {
+        // Move toward target
+        const dx = enemy.target.x - enemy.x;
+        const dy = enemy.target.y - enemy.y;
+        const dist = Math.hypot(dx, dy) || 1;
+       
+        enemy.x += (dx / dist) * enemy.speed;
+        enemy.y += (dy / dist) * enemy.speed;
+      }
+    }
+  });
+ 
+  // Cleanup
+  state.units = state.units.filter(u => u.hp > 0);
+  state.enemies = state.enemies.filter(e => e.hp > 0);
+  state.blocks = state.blocks.filter(b => b.hp > 0);
+  state.trees = state.trees.filter(t => t.wood > 0);
+  state.stones = state.stones.filter(s => s.stone > 0);
+  state.metals = state.metals.filter(m => m.metal > 0);
+ 
+  // Player death
+  if (state.player.hp <= 0) {
+    state.player.alive = false;
+    state.player.hp = 0;
+    showDeath();
+  }
+ 
+  // Wave system
+  tickWave(dt);
+ 
+  // UI update
+  woodEl.textContent = Math.floor(state.player.wood);
+  stoneEl.textContent = Math.floor(state.player.stone);
+  metalEl.textContent = Math.floor(state.player.metal);
+  hpEl.textContent = Math.floor(state.player.hp);
+}
+
+// ====== DRAWING LOOP ======
+function draw() {
+  const cam = camera();
+ 
+  // Clear with sky gradient
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#1a2980');
+  gradient.addColorStop(1, '#26d0ce');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+ 
+  ctx.save();
+  ctx.translate(-cam.x, -cam.y);
+ 
+  // Draw terrain regions
+  const tileCols = Math.floor(CONFIG.worldW / CONFIG.tileSize);
+  const tileRows = Math.floor(CONFIG.worldH / CONFIG.tileSize);
+ 
+  for (let y = 0; y < tileRows; y++) {
+    for (let x = 0; x < tileCols; x++) {
+      const wx = x * CONFIG.tileSize;
+      const wy = y * CONFIG.tileSize;
+      const region = state.regionMap[y] && state.regionMap[y][x];
+     
+      if (region !== undefined) {
+        ctx.fillStyle = REGIONS[region].color + '30';
+        ctx.fillRect(wx, wy, CONFIG.tileSize, CONFIG.tileSize);
+       
+        // Region border
+        if (x === 0 || y === 0 || state.regionMap[y][x-1] !== region || state.regionMap[y-1]?.[x] !== region) {
+          ctx.strokeStyle = REGIONS[region].color + '60';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(wx, wy, CONFIG.tileSize, CONFIG.tileSize);
+        }
+      }
+    }
+  }
+ 
+  // Draw resources
+  state.trees.forEach(t => drawTree(t.x, t.y, t.r, t.wood));
+  state.stones.forEach(s => drawStone(s.x, s.y, s.r, s.stone));
+  state.metals.forEach(m => drawMetal(m.x, m.y, m.r, m.metal));
+ 
+  // Draw mountains
+  state.blocks.filter(b => b.type === 'mountain').forEach(m => {
+    const gradient = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r);
+    gradient.addColorStop(0, '#8b8989');
+    gradient.addColorStop(1, '#696969');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+    ctx.fill();
+   
+    // Snow cap
+    if (m.r > 80) {
+      ctx.fillStyle = '#f0f8ff';
+      ctx.beginPath();
+      ctx.arc(m.x, m.y - m.r * 0.3, m.r * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+ 
+  // Draw structures
+  state.blocks.forEach(b => drawStructure(b));
+ 
+  // Draw units
+  state.units.forEach(unit => {
+    const isSelected = state.player.selectedUnit === unit;
+   
+    switch(unit.type) {
+      case 'soldier':
+        drawSoldier(unit.x, unit.y, isSelected);
+        break;
+      case 'archer':
+        drawArcher(unit.x, unit.y, isSelected);
+        break;
+      case 'knight':
+        drawKnight(unit.x, unit.y, isSelected);
+        break;
+    }
+   
+    // HP bar for damaged units
+    if (unit.hp < unit.maxHp) {
+      const hpPercent = unit.hp / unit.maxHp;
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(unit.x - 15, unit.y - 20, 30, 4);
+      ctx.fillStyle = hpPercent > 0.6 ? '#4CAF50' : hpPercent > 0.3 ? '#FF9800' : '#F44336';
+      ctx.fillRect(unit.x - 15, unit.y - 20, 30 * hpPercent, 4);
+    }
+  });
+ 
+  // Draw enemies
+  state.enemies.forEach(enemy => {
+    drawEnemy(enemy.x, enemy.y, enemy.type, enemy.size);
+   
+    // HP bar
+    const hpPercent = enemy.hp / enemy.maxHp;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(enemy.x - enemy.size, enemy.y - enemy.size - 10, enemy.size * 2, 5);
+    ctx.fillStyle = hpPercent > 0.6 ? '#4CAF50' : hpPercent > 0.3 ? '#FF9800' : '#F44336';
+    ctx.fillRect(enemy.x - enemy.size, enemy.y - enemy.size - 10, enemy.size * 2 * hpPercent, 5);
+  });
+ 
+  // Draw arrows
+  state.arrows.forEach(arrow => {
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.moveTo(arrow.x, arrow.y);
+    ctx.lineTo(arrow.x - 3, arrow.y - 8);
+    ctx.lineTo(arrow.x + 3, arrow.y - 8);
+    ctx.closePath();
+    ctx.fill();
+  });
+ 
+  // Draw player
+  drawPlayer(state.player.x, state.player.y, state.player.r);
+ 
+  // Draw player HP
+  const playerHpPercent = state.player.hp / state.player.maxHp;
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(state.player.x - 25, state.player.y - 35, 50, 6);
+  ctx.fillStyle = playerHpPercent > 0.6 ? '#4CAF50' : playerHpPercent > 0.3 ? '#FF9800' : '#F44336';
+  ctx.fillRect(state.player.x - 25, state.player.y - 35, 50 * playerHpPercent, 6);
+ 
+  // Draw selection circle
+  if (state.player.selectedUnit) {
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (state.player.selectedUnit.w) {
+      // Structure selection
+      const b = state.player.selectedUnit;
+      ctx.rect(b.x - b.w/2 - 2, b.y - b.h/2 - 2, b.w + 4, b.h + 4);
+    } else {
+      // Unit selection
+      ctx.arc(state.player.selectedUnit.x, state.player.selectedUnit.y, 15, 0, Math.PI * 2);
+    }
+    ctx.stroke();
+  }
+ 
+  // Draw build preview
+  if (state.selectedBuild) {
+    const s = STRUCTURES[state.selectedBuild];
+    const mx = cam.x + canvas.width/2;
+    const my = cam.y + canvas.height/2;
+   
+    ctx.strokeStyle = '#00FF00';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.strokeRect(mx - s.w/2, my - s.h/2, s.w, s.h);
+    ctx.setLineDash([]);
+   
+    // Show cost
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(mx - 40, my + s.h/2 + 5, 80, 30);
+    ctx.fillStyle = '#FFF';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`W:${s.cost.wood} S:${s.cost.stone}`, mx, my + s.h/2 + 20);
+  }
+ 
+  ctx.restore();
+ 
+  // Draw minimap
+  drawMinimap();
+}
+
+// ====== MINIMAP ======
+function drawMinimap() {
+  const mmW = mmCanvas.width;
+  const mmH = mmCanvas.height;
+  const sx = mmW / CONFIG.worldW;
+  const sy = mmH / CONFIG.worldH;
+ 
+  // Background
+  mmCtx.fillStyle = '#0a1929';
+  mmCtx.fillRect(0, 0, mmW, mmH);
+ 
+  // Draw regions
+  for (let y = 0; y < state.regionMap.length; y += 2) {
+    for (let x = 0; x < state.regionMap[y].length; x += 2) {
+      const region = state.regionMap[y][x];
+      if (region !== undefined) {
+        mmCtx.fillStyle = REGIONS[region].color + '80';
+        mmCtx.fillRect(x * sx * 2, y * sy * 2, 2, 2);
+      }
+    }
+  }
+ 
+  // Draw resources
+  mmCtx.fillStyle = '#8b4513';
+  state.trees.forEach(t => mmCtx.fillRect(t.x * sx, t.y * sy, 2, 2));
+  mmCtx.fillStyle = '#708090';
+  state.stones.forEach(s => mmCtx.fillRect(s.x * sx, s.y * sy, 2, 2));
+  mmCtx.fillStyle = '#4682b4';
+  state.metals.forEach(m => mmCtx.fillRect(m.x * sx, m.y * sy, 2, 2));
+ 
+  // Draw structures
+  mmCtx.fillStyle = '#8B4513';
+  state.blocks.forEach(b => {
+    if (b.type === 'wall') mmCtx.fillStyle = '#8B4513';
+    else if (b.type === 'tower') mmCtx.fillStyle = '#696969';
+    else if (b.type === 'barracks') mmCtx.fillStyle = '#4a7cb3';
+    else if (b.type === 'resource') mmCtx.fillStyle = '#deb887';
+    else return;
+   
+    mmCtx.fillRect(b.x * sx - 1, b.y * sy - 1, 3, 3);
+  });
+ 
+  // Draw enemies
+  mmCtx.fillStyle = '#ff5555';
+  state.enemies.forEach(e => mmCtx.fillRect(e.x * sx, e.y * sy, 2, 2));
+ 
+  // Draw player
+  mmCtx.fillStyle = '#4169e1';
+  mmCtx.fillRect(state.player.x * sx - 2, state.player.y * sy - 2, 4, 4);
+ 
+  // Draw viewport rectangle
+  const cam = camera();
+  mmCtx.strokeStyle = '#FFFFFF';
+  mmCtx.lineWidth = 1;
+  mmCtx.strokeRect(cam.x * sx, cam.y * sy, canvas.width * sx, canvas.height * sy);
+}
+
+// ====== DEATH & RESPAWN ======
+function showDeath() {
+  finalWaveEl.textContent = state.wave.number;
+  finalStructuresEl.textContent = state.blocks.length;
+  deathMsg.textContent = `Your kingdom fell after ${state.wave.number} waves!`;
+  deathOverlay.style.display = 'flex';
+}
+
+respawnBtn.addEventListener('click', () => {
+  // Reset player
+  state.player.x = CONFIG.worldW/2;
+  state.player.y = CONFIG.worldH/2;
+  state.player.hp = 100;
+  state.player.wood = 50;
+  state.player.stone = 25;
+  state.player.metal = 10;
+  state.player.alive = true;
+  state.player.selectedUnit = null;
+ 
+  // Reset wave
+  state.wave.number = 0;
+  state.wave.nextIn = CONFIG.waveInterval;
+  state.wave.active = false;
+  state.wave.spawnQueue = [];
+ 
+  // Clear enemies and arrows
+  state.enemies = [];
+  state.arrows = [];
+ 
+  // Keep structures and units
+  // state.blocks = state.blocks.filter(b => b.hp > 0);
+  // state.units = state.units.filter(u => u.hp > 0);
+ 
+  deathOverlay.style.display = 'none';
+  canvas.style.transform = '';
+});
+
+// ====== INITIALIZATION ======
+function init() {
+  generateWorld();
+  createBuildButtons();
+ 
+  // Add some initial enemies
+  for (let i = 0; i < 3; i++) {
+    spawnEnemy(rand(100, CONFIG.worldW - 100), rand(100, CONFIG.worldH - 100), 'golem');
+  }
+  for (let i = 0; i < 2; i++) {
+    spawnEnemy(rand(100, CONFIG.worldW - 100), rand(100, CONFIG.worldH - 100), 'orc');
+  }
+}
+
+// ====== MAIN GAME LOOP ======
+let lastTime = performance.now();
+function gameLoop(now) {
+  const dt = now - lastTime;
+  lastTime = now;
+ 
+  update(dt);
+  draw();
+ 
+  requestAnimationFrame(gameLoop);
+}
+
+// ====== START GAME ======
+startBtn.addEventListener('click', () => {
+  loadingScreen.style.display = 'none';
+  init();
+  gameLoop(performance.now());
+});
+
+// ====== RESPONSIVE CANVAS ======
+function fitCanvas() {
+  const maxW = window.innerWidth;
+  const maxH = window.innerHeight;
+  const ratio = canvas.width / canvas.height;
+ 
+  let newW = maxW;
+  let newH = newW / ratio;
+ 
+  if (newH > maxH) {
+    newH = maxH;
+    newW = newH * ratio;
+  }
+ 
+  canvas.style.width = newW + 'px';
+  canvas.style.height = newH + 'px';
+}
+
+window.addEventListener('resize', fitCanvas);
+fitCanvas();
+
+// Preload by initializing
+init();
+</script>
+
+
+
+
+
+
+</body></html>
