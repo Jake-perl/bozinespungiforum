@@ -249,7 +249,7 @@
   <h1>Kingdom Lords</h1>
   <div class="resource">
     <span class="wood">Wood</span>
-    <span id="wood">37</span>
+    <span id="wood">50</span>
   </div>
   <div class="resource">
     <span class="stone">Stone</span>
@@ -257,7 +257,7 @@
   </div>
   <div class="resource">
     <span class="metal">Metal</span>
-    <span id="metal">0</span>
+    <span id="metal">10</span>
   </div>
   <div style="margin-top: 12px; padding: 8px; background: rgba(255, 50, 50, 0.1); border-radius: 6px;">
     HP: <span id="hp">100</span>
@@ -291,7 +291,7 @@
       <small style="font-size:10px;opacity:0.8">
         W:50 S:30 M:20
       </small>
-    </button><button class="buildBtn active">
+    </button><button class="buildBtn">
       <span class="hotkey">5</span>
       Archery Range<br>
       <small style="font-size:10px;opacity:0.8">
@@ -309,14 +309,14 @@
 
 <div id="wavePanel" class="panel">
   <div><b>REGION DEFENSE</b></div>
-  <div>Wave: <span id="waveNum">2</span></div>
+  <div>Wave: <span id="waveNum">0</span></div>
   <div>Next Attack:</div>
-  <div class="waveTimer"><span id="waveTimer">17</span>s</div>
-  <div>Enemies: <span id="enemiesLeft">26</span></div>
+  <div class="waveTimer"><span id="waveTimer">30</span>s</div>
+  <div>Enemies: <span id="enemiesLeft">0</span></div>
 </div>
 
 <!-- Loading / Rules Screen -->
-<div id="loadingScreen" style="display: none;">
+<div id="loadingScreen">
   <div id="rules">
     <h1>KINGDOM LORDS</h1>
     <p>Build your kingdom across different regions, gather resources, and defend against monstrous hordes!</p>
@@ -358,13 +358,13 @@
 </div>
 
 <!-- Death overlay -->
-<div id="deathOverlay" style="display: none;">
+<div id="deathOverlay">
   <div id="deathCard">
     <h2 style="color: #ff5555;">KINGDOM FALLEN</h2>
-    <p id="deathMsg">Your kingdom fell after 3 waves!</p>
+    <p id="deathMsg">Your defenses have been breached...</p>
     <div style="margin: 20px 0; padding: 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
-      <div>Survived Waves: <span id="finalWave">3</span></div>
-      <div>Structures Built: <span id="finalStructures">17</span></div>
+      <div>Survived Waves: <span id="finalWave">0</span></div>
+      <div>Structures Built: <span id="finalStructures">0</span></div>
     </div>
     <button id="respawnBtn">REBUILD KINGDOM</button>
   </div>
