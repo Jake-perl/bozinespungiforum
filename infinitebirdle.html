@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>UK Birdle</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    color: #1f2937;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .game {
+    width: 420px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .cell {
+    border: 3px solid #d7e3ec;
+    height: 52px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    text-align: center;
+    padding: 4px;
+  }
+
+  .correct { background: #6aaa64; color: white; border-color: #6aaa64; }
+  .partial { background: #c9b458; color: white; border-color: #c9b458; }
+  .wrong   { background: #9aa0a6; color: white; border-color: #9aa0a6; }
+
+  .controls {
+    border: 2px solid #5dbfc0;
+    padding: 10px;
+    border-radius: 6px;
+  }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  select {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  button {
+    width: 100%;
+    font-size: 24px;
+    padding: 10px;
+    background: #eef7fb;
+    border: 2px solid #5dbfc0;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+  <!-- Guess grid -->
+  <div id="grid" class="grid"></div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="controls-grid">
+      <select id="food">
+        <option>Fish</option><option>Fruit</option><option>Insect</option>
+        <option>Invertebrate</option><option>Meat</option>
+        <option>Plant</option><option>Seed</option>
+      </select>
+
+      <select id="size">
+        <option>Extremely Small</option><option>Small</option>
+        <option>Medium</option><option>Large</option>
+        <option>Extremely Large</option>
+      </select>
+
+      <select id="feet">
+        <option>Hunting</option><option>Perching</option>
+        <option>Swimming</option><option>Walking</option>
+      </select>
+
+      <select id="habitat">
+        <option>Aerial</option><option>Agriculture</option>
+        <option>Coastal</option><option>Forest</option>
+        <option>Freshwater</option><option>Grassland</option>
+        <option>Marine</option><option>Scrubland</option>
+        <option>Upland</option><option>Urban</option>
+        <option>Wetland</option>
+      </select>
+
+      <select id="name">
+        <option>Robin</option>
+        <option>House Sparrow</option>
+        <option>Mallard</option>
+        <option>Peregrine Falcon</option>
+        <option>Mute Swan</option>
+        <option>Blue Tit</option>
+        <option>Great Tit</option>
+        <option>Blackbird</option>
+        <option>Song Thrush</option>
+        <option>Wren</option>
+        <option>Chaffinch</option>
+        <option>Goldfinch</option>
+        <option>Greenfinch</option>
+        <option>Starling</option>
+        <option>Woodpigeon</option>
+        <option>Carrion Crow</option>
+        <option>Magpie</option>
+        <option>Teal</option>
+        <option>Grey Herron</option>
+        <option>Little Egret</option>
+        <option>Herring Gull</option>
+        <option>Black Headed Gull</option>
+        <option>Oystercatcher</option>
+        <option>Gannet</option>
+        <option>Buzzard</option>
+        <option>Sparrowhawk</option>
+        <option>Barn Owl</option>
+        <option>Skylark</option>
+        <option>Meadow Pipit</option>
+        <option>Red Grouse</option>
+      </select>
+    </div>
+
+    <button onclick="guess()">GUESS</button>
+  </div>
+
+</div>
+
+<script>
+/* =======================
+   BIRD DATA
+======================= */
+
+const birds = {
+  "Robin": {
+    food: ["Insect", "Invertebrate"],
+    size: "Small",
+    feet: "Perching",
+    habitat: ["Forest", "Urban", "Scrubland"]
+  },
+  "House Sparrow": {
+    food: ["Seed", "Insect"],
+    size: "Small",
+    feet: "Perching",
+    habitat: ["Urban", "Agriculture"]
+  },
+  "Blue Tit": {
+    food: ["Insect", "Invertebrate"],
+    size: "Extremely Small",
+    feet: "Perching",
+    habitat: ["Forest", "Urban"]
+  },
+  "Great Tit": {
+    food: ["Insect", "Seed"],
+    size: "Small",
+    feet: "Perching",
+    habitat: ["Forest", "Urban"]
+  },
+  "Blackbird": {
+    food: ["Invertebrate", "Fruit"],
+    size: "Medium",
+    feet: "Walking",
+    habitat: ["Forest", "Urban"]
+  },
+  "Song Thrush": {
+    food: ["Invertebrate"],
+    size: "Medium",
+    feet: "Walking",
+    habitat: ["Forest", "Scrubland"]
+  },
+  "Wren": {
+    food: ["Insect", "Invertebrate"],
+    size: "Extremely Small",
+    feet: "Perching",
+    habitat: ["Forest", "Scrubland"]
+  },
+  "Chaffinch": {
+    food: ["Seed", "Insect"],
+    size: "Small",
+    feet: "Perching",
+    habitat: ["Forest", "Agriculture"]
+  },
+  "Goldfinch": {
+    food: ["Seed"],
+    size: "Small",
+    feet: "Perching",
+    habitat: ["Urban", "Scrubland"]
+  },
+  "Greenfinch": {
+    food: ["Seed"],
+    size: "Small",
+    feet: "Perching",
+    habitat: ["Urban", "Agriculture"]
+  },
+
+  "Starling": {
+    food: ["Invertebrate"],
+    size: "Medium",
+    feet: "Walking",
+    habitat: ["Urban", "Agriculture"]
+  },
+  "Woodpigeon": {
+    food: ["Plant", "Seed"],
+    size: "Large",
+    feet: "Walking",
+    habitat: ["Urban", "Agriculture"]
+  },
+  "Carrion Crow": {
+    food: ["Meat", "Invertebrate"],
+    size: "Large",
+    feet: "Walking",
+    habitat: ["Urban", "Agriculture"]
+  },
+  "Magpie": {
+    food: ["Meat", "Invertebrate"],
+    size: "Large",
+    feet: "Walking",
+    habitat: ["Urban", "Agriculture"]
+  },
+
+  "Mallard": {
+    food: ["Plant", "Invertebrate"],
+    size: "Medium",
+    feet: "Swimming",
+    habitat: ["Wetland", "Freshwater"]
+  },
+  "Teal": {
+    food: ["Plant", "Invertebrate"],
+    size: "Small",
+    feet: "Swimming",
+    habitat: ["Wetland", "Freshwater"]
+  },
+  "Mute Swan": {
+    food: ["Plant"],
+    size: "Extremely Large",
+    feet: "Swimming",
+    habitat: ["Wetland", "Freshwater"]
+  },
+  "Grey Heron": {
+    food: ["Fish"],
+    size: "Large",
+    feet: "Walking",
+    habitat: ["Wetland", "Freshwater"]
+  },
+  "Little Egret": {
+    food: ["Fish"],
+    size: "Medium",
+    feet: "Walking",
+    habitat: ["Wetland", "Coastal"]
+  },
+
+  "Herring Gull": {
+    food: ["Fish", "Meat", "Invertebrate"],
+    size: "Large",
+    feet: "Walking",
+    habitat: ["Coastal", "Urban", "Marine"]
+  },
+  "Black-headed Gull": {
+    food: ["Fish", "Invertebrate"],
+    size: "Medium",
+    feet: "Walking",
+    habitat: ["Coastal", "Wetland"]
+  },
+  "Oystercatcher": {
+    food: ["Invertebrate"],
+    size: "Medium",
+    feet: "Walking",
+    habitat: ["Coastal"]
+  },
+  "Gannet": {
+    food: ["Fish"],
+    size: "Large",
+    feet: "Swimming",
+    habitat: ["Marine"]
+  },
+
+  "Buzzard": {
+    food: ["Meat"],
+    size: "Large",
+    feet: "Hunting",
+    habitat: ["Upland", "Forest"]
+  },
+  "Peregrine Falcon": {
+    food: ["Meat"],
+    size: "Medium",
+    feet: "Hunting",
+    habitat: ["Urban", "Upland", "Coastal"]
+  },
+  "Sparrowhawk": {
+    food: ["Meat"],
+    size: "Medium",
+    feet: "Hunting",
+    habitat: ["Forest", "Urban"]
+  },
+  "Barn Owl": {
+    food: ["Meat"],
+    size: "Medium",
+    feet: "Hunting",
+    habitat: ["Agriculture"]
+  },
+
+  "Skylark": {
+    food: ["Seed", "Insect"],
+    size: "Small",
+    feet: "Walking",
+    habitat: ["Grassland", "Agriculture"]
+  },
+  "Meadow Pipit": {
+    food: ["Insect", "Invertebrate"],
+    size: "Small",
+    feet: "Walking",
+    habitat: ["Upland", "Grassland"]
+  },
+  "Red Grouse": {
+    food: ["Plant"],
+    size: "Medium",
+    feet: "Walking",
+    habitat: ["Upland"]
+  }
+};
+
+const birdNames = Object.keys(birds);
+const answerName = birdNames[Math.floor(Math.random() * birdNames.length)];
+const answer = birds[answerName];
+
+const grid = document.getElementById("grid");
+let attempts = 0;
+const maxAttempts = 5;
+
+/* =======================
+   INITIAL GRID
+======================= */
+
+for (let i = 0; i < maxAttempts * 5; i++) {
+  const cell = document.createElement("div");
+  cell.className = "cell";
+  grid.appendChild(cell);
+}
+
+/* =======================
+   GUESS LOGIC
+======================= */
+
+function guess() {
+  if (attempts >= maxAttempts) return;
+
+  const food = document.getElementById("food").value;
+  const size = document.getElementById("size").value;
+  const feet = document.getElementById("feet").value;
+  const habitat = document.getElementById("habitat").value;
+  const name = document.getElementById("name").value;
+
+  const start = attempts * 5;
+
+  setTile(start, food, answer.food, true);
+  setTile(start + 1, size, answer.size);
+  setTile(start + 2, feet, answer.feet);
+  setTile(start + 3, habitat, answer.habitat, true);
+  setTile(start + 4, name, answerName);
+
+  if (name === answerName) {
+    setTimeout(() => alert("Correct! 🎉"), 100);
+  }
+
+  attempts++;
+}
+
+function setTile(index, guess, correct, partialAllowed = false) {
+  const cell = grid.children[index];
+  cell.textContent = guess;
+
+  if (Array.isArray(correct)) {
+    cell.classList.add(
+      correct.includes(guess) ? "partial" : "wrong"
+    );
+  } else {
+    cell.classList.add(
+      guess === correct ? "correct" : "wrong"
+    );
+  }
+}
+</script>
+
+</body>
+</html>
