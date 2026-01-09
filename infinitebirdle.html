@@ -378,11 +378,21 @@ function guess() {
   setTile(start + 3, habitat, answer.habitat, true);
   setTile(start + 4, name, answerName);
 
+  // Win
   if (name === answerName) {
     setTimeout(() => alert("Correct! 🎉"), 100);
+    attempts = maxAttempts; // stop further guesses
+    return;
   }
 
   attempts++;
+
+  // Lose (last attempt used)
+  if (attempts === maxAttempts) {
+    setTimeout(() => {
+      alert(`Unlucky! The correct answer was: ${answerName}`);
+    }, 100);
+  }
 }
 
 function setTile(index, guess, correct, partialAllowed = false) {
