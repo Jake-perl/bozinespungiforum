@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  font-family: "Garamond", "Georgia", serif;
+  background: #2b1d0e;
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+}
+
+#scroll {
+  background: #f2e6c9;
+  padding: 25px;
+  border: 8px solid #8b5a2b;
+  border-radius: 20px;
+  width: 420px;
+  box-shadow: 5px 5px 15px black;
+  text-align: center;
+  background-image: linear-gradient(#fff4d1, #e6d4a3);
+}
+
+h2 {
+  margin-top: 0;
+  color: #4b2e13;
+  font-size: 24px;
+}
+
+button {
+  background: #8b5a2b;
+  color: white;
+  border: 2px solid #4b2e13;
+  padding: 6px 10px;
+  margin: 4px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+button:hover {
+  background: #6b441f;
+}
+
+input {
+  width: 60px;
+  text-align: center;
+  font-size: 16px;
+}
+
+#results {
+  margin-top: 15px;
+  padding: 10px;
+  background: #fff3d0;
+  border: 2px dashed #8b5a2b;
+  min-height: 40px;
+  font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="scroll">
+  <h2>📜 Scroll of Fate 📜</h2>
+
+  <p>Number of dice to roll:</p>
+  <input type="number" id="qty" value="1" min="1" max="20">
+
+  <p>Choose your die:</p>
+
+  <button onclick="roll(100)">d100</button>
+  <button onclick="roll(20)">d20</button>
+  <button onclick="roll(12)">d12</button>
+  <button onclick="roll(10)">d10</button>
+  <button onclick="roll(8)">d8</button>
+  <button onclick="roll(6)">d6</button>
+  <button onclick="roll(4)">d4</button>
+  <button onclick="coinFlip()">🪙 Coin Flip</button>
+
+  <div id="results"></div>
+</div>
+
+<script>
+function roll(sides) {
+  let qty = document.getElementById("qty").value;
+  let results = [];
+  let total = 0;
+
+  for (let i = 0; i < qty; i++) {
+    let r = Math.floor(Math.random() * sides) + 1;
+    results.push(r);
+    total += r;
+  }
+
+  document.getElementById("results").innerHTML =
+    "<b>Rolling d" + sides + " x " + qty + "</b><br>" +
+    "Results: " + results.join(", ") +
+    "<br><b>Total: " + total + "</b>";
+}
+
+function coinFlip() {
+  let result = Math.random() < 0.5 ? "HEADS" : "TAILS";
+  document.getElementById("results").innerHTML =
+    "<b>🪙 Coin Flip:</b> " + result;
+}
+</script>
+
+</body>
+</html>
