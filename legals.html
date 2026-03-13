@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BOZ ULTRA MADDER PROTOCOLS</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --c1:#ff2d95; --c2:#00ffd5; --c3:#f6e600; --c4:#7f00ff; --c5:#ff7a00; --c6:#00b3ff;
+    --panel:rgba(255,255,255,0.06);
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,monospace;overflow:hidden;
+    /* intentionally incoherent background layers */
+    background:
+      radial-gradient(circle at 10% 20%, rgba(255,45,149,0.12) 0%, rgba(0,255,213,0.06) 12%, transparent 20%),
+      linear-gradient(120deg, rgba(127,0,255,0.08), rgba(255,122,0,0.06)),
+      repeating-linear-gradient(45deg, rgba(246,230,0,0.02) 0 6px, rgba(0,179,255,0.02) 6px 12px),
+      linear-gradient(180deg,#ffe6f0 0%, #e6fff8 30%, #fff7d6 60%, #ffdbe6 100%);
+    color:#071021;
+  }
+
+  /* chaotic grid and scanlines */
+  .grid {
+    position:fixed;left:0;top:0;right:0;bottom:0;z-index:0;
+    background-image:
+      linear-gradient(0deg, rgba(0,0,0,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 28px 28px, 28px 28px;
+    mix-blend-mode:overlay;opacity:0.9;transform:skewY(-6deg) scaleY(1.02);
+  }
+
+  header{position:fixed;left:0;right:0;top:0;height:84px;display:flex;align-items:center;padding:12px 20px;z-index:60;backdrop-filter: blur(6px)}
+  .logo{width:84px;height:84px;border-radius:12px;background:
+    conic-gradient(from 90deg,var(--c1),var(--c4),var(--c2),var(--c5));display:flex;align-items:center;justify-content:center;font-weight:900;color:#071021;font-family:"Press Start 2P",monospace;transform:rotate(-12deg);box-shadow:0 18px 60px rgba(0,0,0,0.6)}
+  h1{margin:0 0 0 18px;font-family:"Orbitron",sans-serif;font-weight:900;letter-spacing:1px;font-size:18px;color:var(--c4);text-shadow:0 0 18px rgba(127,0,255,0.12)}
+  nav{margin-left:auto;display:flex;gap:10px}
+  nav button{background:linear-gradient(90deg,var(--c3),var(--c6));border:none;padding:10px 14px;border-radius:10px;color:#071021;font-weight:900;cursor:pointer;font-family:"Press Start 2P",monospace;box-shadow:0 6px 18px rgba(0,0,0,0.25)}
+
+  main{padding:120px 36px 36px;display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start;z-index:10}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));border-radius:14px;padding:18px;border:2px solid rgba(0,0,0,0.06);box-shadow:0 30px 80px rgba(0,0,0,0.25)}
+  .hero{display:flex;gap:18px;align-items:center;padding:22px;border-radius:16px;position:relative;overflow:hidden;mix-blend-mode:normal}
+  .avatar{width:160px;height:160px;border-radius:12px;background:
+    repeating-linear-gradient(30deg,var(--c2) 0 6px,var(--c1) 6px 12px,var(--c5) 12px 18px);display:flex;align-items:center;justify-content:center;font-weight:900;color:#071021;font-size:36px;transform:rotate(-10deg);box-shadow:0 18px 60px rgba(0,0,0,0.2)}
+  .title{font-family:"Orbitron",sans-serif;font-size:22px;color:var(--c1);text-shadow:0 0 8px rgba(255,45,149,0.12)}
+  .subtitle{color:#071021;margin-top:6px;font-size:13px}
+
+  .marquee{height:44px;overflow:hidden;border-radius:10px;background:linear-gradient(90deg,#fff0b3,#ffd6f0);display:flex;align-items:center;padding:6px 12px;border:2px solid rgba(0,0,0,0.04);margin-top:12px}
+  .marquee .run{display:inline-block;white-space:nowrap;color:#071021;font-weight:900;animation:run 8s linear infinite;font-family:"Press Start 2P",monospace}
+  @keyframes run{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+
+  .tanks{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+  .tank{display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(0,0,0,0.02));border:1px dashed rgba(0,0,0,0.06);position:relative;overflow:hidden}
+  .badge{width:64px;height:64px;border-radius:8px;background:linear-gradient(90deg,var(--c4),var(--c2));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;border:2px solid rgba(255,255,255,0.06);font-family:"Press Start 2P",monospace}
+  .spin{width:48px;height:48px;border-radius:50%;background:linear-gradient(90deg,var(--c5),var(--c3));display:flex;align-items:center;justify-content:center;color:#071021;font-weight:900;animation:spin 6s linear infinite}
+  @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+  .pixel-stage{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));border-radius:8px;padding:12px;margin-top:12px;display:flex;gap:12px;align-items:center;justify-content:center;min-height:140px}
+  canvas.pixel{width:100%;height:120px;background:#111;border-radius:6px;image-rendering:pixelated;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
+
+  /* disclaimers popups with chaotic colours */
+  .disclaimer{
+    position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.9);min-width:420px;
+    background:linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+    border:4px solid rgba(0,0,0,0.08);padding:18px;border-radius:12px;color:#071021;font-family:"Press Start 2P",monospace;z-index:9999;box-shadow:0 30px 120px rgba(0,0,0,0.9);opacity:0;transition:all 0.28s cubic-bezier(.2,.9,.2,1)}
+  .disclaimer.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .disclaimer h4{margin:0 0 8px 0;color:var(--c6);font-size:12px}
+  .disclaimer pre{white-space:pre-wrap;color:#222;font-family:monospace;font-size:11px;margin:0}
+  .disclaimer .close{display:inline-block;margin-top:12px;padding:8px 10px;border-radius:8px;background:linear-gradient(90deg,var(--c1),var(--c2));color:#071021;border:none;cursor:pointer;font-weight:900}
+
+  /* sprite field for many animated elements */
+  #sprite-field{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:hidden}
+  .sprite{position:absolute;border-radius:2px;mix-blend-mode:screen;opacity:0.95;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.2))}
+
+  /* retro scanline bars and VHS flicker */
+  .vhs{position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;mix-blend-mode:overlay;opacity:0.18;background-image:linear-gradient(transparent 60%, rgba(255,255,255,0.02) 61%);z-index:8}
+
+  footer{position:fixed;left:0;right:0;bottom:0;padding:12px 18px;text-align:center;color:#071021;font-size:12px;z-index:60;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
+  @media(max-width:980px){main{grid-template-columns:1fr;}.float-boz{display:none}.disclaimer{min-width:300px}}
+</style>
+</head>
+<body>
+  <div class="grid" aria-hidden="true"></div>
+  <div class="vhs" aria-hidden="true"></div>
+
+  <canvas id="bg-canvas" style="position:fixed;left:0;top:0;width:100%;height:100%;z-index:1;pointer-events:none;mix-blend-mode:screen"></canvas>
+
+  <header>
+    <div class="logo">BOZ</div>
+    <h1>BOZ ULTRA PROTOCOLS</h1>
+    <nav>
+      <button id="pop-legal">POP LEGALS</button>
+      <button id="rain-legal">RAIN LEGALS</button>
+      <button id="sprite-storm">SPRITE STORM</button>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <div class="card hero">
+        <div class="avatar">BM</div>
+        <div>
+          <div class="title">BOZ MAN</div>
+          <div class="subtitle">Protocols, popups, and retro nonsense</div>
+
+          <div class="tanks" id="tanks-grid">
+            <div class="tank"><div class="badge">BZ-01</div><div><strong>Tea-Brew Turret</strong><div style="color:#071021;font-size:12px">Auto-brew and tactical biscuits</div></div><div class="spin" style="margin-left:auto">⚙</div></div>
+            <div class="tank"><div class="badge">BZ-77</div><div><strong>Optimism Drive</strong><div style="color:#071021;font-size:12px">Runs on applause and crisps</div></div><div class="spin" style="margin-left:auto">⚙</div></div>
+            <div class="tank"><div class="badge">BZ-QUARRY</div><div><strong>Quarry Excavator</strong><div style="color:#071021;font-size:12px">Digs nostalgia and retrieves punchlines</div></div><div class="spin" style="margin-left:auto">⚙</div></div>
+            <div class="tank"><div class="badge">BZ-∞</div><div><strong>Infinite Tangle</strong><div style="color:#071021;font-size:12px">Paradox confetti generator</div></div><div class="spin" style="margin-left:auto">⚙</div></div>
+          </div>
+
+          <div class="marquee"><div class="run">PROTOCOL STREAMING — yyyyyy.info — yak.net — bozinex.archive — HONK —</div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3 style="margin:0 0 8px 0;font-family:Orbitron;color:var(--c2)">PIXEL STAGE</h3>
+        <div class="pixel-stage">
+          <canvas id="pixel-canvas" class="pixel" width="640" height="120"></canvas>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" id="spawn-sprite">SPAWN SPRITE</button>
+          <button class="btn" id="warp">WARP</button>
+          <button class="btn" id="cascade">CASCADE</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3 style="margin:0 0 8px 0;font-family:Orbitron;color:var(--c1)">RITUALS</h3>
+        <ul style="color:#071021;line-height:1.6;font-family:monospace;font-size:12px">
+          <li>Feed a tank a biscuit and recite the 8-bit hymn.</li>
+          <li>Bozify a mundane object until it honks politely.</li>
+          <li>Press POP LEGALS to view protocol addenda.</li>
+        </ul>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card" style="position:sticky;top:120px">
+        <h4 style="margin:0 0 8px 0;font-family:Orbitron">DICTIONARY</h4>
+        <ul style="color:#071021;line-height:1.6;font-family:monospace;font-size:12px">
+          <li><strong>Bozify</strong> — Add stripes, neon, and a polite honk</li>
+          <li><strong>Tankle</strong> — Mini tank for ceremonial puddle-splashing</li>
+          <li><strong>Spungulate</strong> — Rearrange socks into a meaningful pattern</li>
+        </ul>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" id="legal-one">LEGAL POP</button>
+          <button class="btn" id="legal-many">LEGAL RAIN</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div id="sprite-field"></div>
+  <div class="float-boz" id="floatBoz" style="position:fixed;right:6%;bottom:8%;width:220px;height:220px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#071021;z-index:50;box-shadow:0 30px 80px rgba(0,0,0,0.6);animation:float 5s ease-in-out infinite;background:linear-gradient(45deg,var(--c1),var(--c4),var(--c2))">BOZ</div>
+  <footer>BOZ ULTRA PROTOCOLS • yyyyyy.info • yak.net</footer>
+
+  <div id="disclaimer-container"></div>
+
+<script>
+/* ---------- Background neon nodes with wildly varying colours ---------- */
+const bg = document.getElementById('bg-canvas');
+const bgCtx = bg.getContext('2d');
+function resizeBg(){ bg.width = innerWidth; bg.height = innerHeight; }
+resizeBg(); addEventListener('resize', resizeBg);
+const palette = ['#ff2d95','#00ffd5','#f6e600','#7f00ff','#ff7a00','#00b3ff','#9bff6b','#ff6b9b'];
+const nodes = [];
+for(let i=0;i<220;i++){
+  nodes.push({x:Math.random()*bg.width,y:Math.random()*bg.height,vx:(Math.random()-0.5)*1.2,vy:(Math.random()-0.5)*1.2,r:Math.random()*4+0.6,c:palette[Math.floor(Math.random()*palette.length)]});
+}
+function renderBg(){
+  bgCtx.clearRect(0,0,bg.width,bg.height);
+  for(let n of nodes){
+    n.x += n.vx; n.y += n.vy;
+    if(n.x<0) n.x = bg.width; if(n.x>bg.width) n.x=0;
+    if(n.y<0) n.y = bg.height; if(n.y>bg.height) n.y=0;
+    const g = bgCtx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r*12);
+    g.addColorStop(0,n.c); g.addColorStop(1,'rgba(0,0,0,0)');
+    bgCtx.globalCompositeOperation='lighter';
+    bgCtx.fillStyle=g; bgCtx.fillRect(n.x-n.r*12,n.y-n.r*12,n.r*24,n.r*24);
+  }
+  bgCtx.globalCompositeOperation='source-over';
+  requestAnimationFrame(renderBg);
+}
+renderBg();
+
+/* ---------- Pixel canvas sprites ---------- */
+const pCanvas = document.getElementById('pixel-canvas');
+const pCtx = pCanvas.getContext('2d');
+const sprites = [];
+function drawPixels(){
+  pCtx.fillStyle='#0b0b0b'; pCtx.fillRect(0,0,pCanvas.width,pCanvas.height);
+  for(let s of sprites){
+    s.x += s.vx; s.y += s.vy; s.frame += 1;
+    if(s.x > pCanvas.width) s.x = -s.w*4;
+    if(s.x < -s.w*4) s.x = pCanvas.width;
+    for(let py=0; py<s.h; py++){
+      for(let px=0; px<s.w; px++){
+        const on = ((px+py+s.frame)%2===0);
+        pCtx.fillStyle = on ? s.color : '#050505';
+        pCtx.fillRect(Math.floor(s.x+px*4), Math.floor(s.y+py*4), 4, 4);
+      }
+    }
+  }
+  requestAnimationFrame(drawPixels);
+}
+drawPixels();
+
+/* spawn many sprites on click */
+document.getElementById('spawn-sprite').addEventListener('click', ()=>{
+  for(let i=0;i<120;i++){
+    sprites.push({x:Math.random()*pCanvas.width,y:Math.random()*pCanvas.height,vx:(Math.random()-0.5)*3,vy:(Math.random()-0.5)*1.6,w:8,h:6,color:palette[Math.floor(Math.random()*palette.length)],frame:0});
+  }
+});
+
+/* warp effect toggles hue wildly */
+document.getElementById('warp').addEventListener('click', ()=>{
+  document.body.style.transition='filter 0.6s';
+  document.body.style.filter='hue-rotate(' + (Math.random()*360|0) + 'deg) saturate(1.8) contrast(1.15)';
+  setTimeout(()=>document.body.style.filter='',1200);
+});
+
+/* sprite storm generator aiming for ~2000 animated elements */
+const spriteField = document.getElementById('sprite-field');
+function createSprite(x,y,color,delay){
+  const el = document.createElement('div');
+  el.className = 'sprite';
+  const size = 2 + Math.random()*14;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.width = size + 'px';
+  el.style.height = size + 'px';
+  el.style.background = color;
+  spriteField.appendChild(el);
+  const dx = (Math.random()-0.5) * (200 + Math.random()*1600);
+  const dy = (Math.random()-0.5) * (200 + Math.random()*1600);
+  const dur = 3000 + Math.random()*12000;
+  el.animate([
+    { transform: 'translate(0,0) rotate(0deg) scale(1)', opacity: 0.95 },
+    { transform: `translate(${dx}px, ${dy}px) rotate(${Math.random()*1080-540}deg) scale(${0.2+Math.random()*2})`, opacity: 0.05 }
+  ], { duration: dur, easing: 'cubic-bezier(.2,.9,.2,1)', delay: delay });
+  setTimeout(()=>el.remove(), dur + (delay||0) + 200);
+}
+document.getElementById('sprite-storm').addEventListener('click', ()=>{
+  const count = 2000;
+  for(let i=0;i<count;i++){
+    const x = Math.random()*window.innerWidth;
+    const y = Math.random()*window.innerHeight;
+    const color = palette[Math.floor(Math.random()*palette.length)];
+    createSprite(x,y,color, Math.random()*2000);
+  }
+});
+
+/* confetti burst */
+function burstConfetti(x,y){
+  const c = document.createElement('canvas'); c.width = innerWidth; c.height = innerHeight; c.style.position='fixed'; c.style.left=0; c.style.top=0; c.style.zIndex=9998; c.style.pointerEvents='none';
+  document.body.appendChild(c);
+  const ctx = c.getContext('2d'); const pieces=[];
+  for(let i=0;i<220;i++){
+    pieces.push({x,y,vx:(Math.random()-0.5)*18,vy:(Math.random()-1.5)*12,r:Math.random()*8+2,c:palette[Math.floor(Math.random()*palette.length)],life:Math.random()*100+40,rot:Math.random()*360,vr:(Math.random()-0.5)*12});
+  }
+  const id = setInterval(()=>{
+    ctx.clearRect(0,0,c.width,c.height);
+    for(let i=pieces.length-1;i>=0;i--){
+      const p = pieces[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.55; p.rot+=p.vr; p.life--;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.6); ctx.restore();
+      if(p.life<=0) pieces.splice(i,1);
+    }
+    if(pieces.length===0){ clearInterval(id); c.remove(); }
+  },16);
+}
+
+/* synth blip */
+function synthBlip(freq, dur=0.06){
+  try{
+    const ac = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ac.createOscillator(); const g = ac.createGain();
+    o.type = ['sine','square','sawtooth','triangle'][Math.floor(Math.random()*4)];
+    o.frequency.value = freq;
+    g.gain.value = 0.02; o.connect(g); g.connect(ac.destination);
+    o.start(); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+    o.stop(ac.currentTime + dur + 0.02);
+  }catch(e){}
+}
+
+/* complex legal babble generator with long nested clauses */
+const container = document.getElementById('disclaimer-container');
+function randomLegal(){
+  const clauses = [
+    "Pursuant to the Retro Protocols and Bozian Annex the viewer acknowledges ceremonial confetti deployment.",
+    "By interacting you consent to the non-transferable right of Boz Man to misplace one sock per cycle.",
+    "Boz Tanks retain immunity from mild embarrassment and are indemnified against crumbs and crumbs-related claims.",
+    "This transmission references archival nodes at yyyyyy.info and mirror endpoints at yak.net for redundancy.",
+    "Disputes shall be submitted to a panel of three impartial hedgehogs whose decisions are advisory and squeaky.",
+    "The user waives claims for damages arising from spontaneous nostalgia, retro feelings, or urges to spungulate.",
+    "All pixel sprites and tank schematics are provided as-is without warranty of merchantability or ritual fitness.",
+    "By pressing any button you accept that Boz Man may deploy an Optimism Drive and redistribute leftover crisps.",
+    "Temporal anomalies created by the Infinite Tangle are decorative and non-binding; biscuits may be consumed at will.",
+    "This document is verbose, recursive, and ceremonially redundant to satisfy archival checksum requirements."
+  ];
+  let text = "";
+  const count = 6 + Math.floor(Math.random()*10);
+  for(let i=0;i<count;i++){
+    const idx = Math.floor(Math.random()*clauses.length);
+    text += (i+1) + ". " + clauses[idx] + " ";
+    if(Math.random() > 0.5){
+      text += "\n   (" + String.fromCharCode(97 + Math.floor(Math.random()*6)) + ") " + clauses[Math.floor(Math.random()*clauses.length)] + " ";
+      if(Math.random() > 0.6){
+        text += "\n      i. " + clauses[Math.floor(Math.random()*clauses.length)] + " ";
+      }
+    }
+  }
+  text += "\n\nSigned: Council of Slightly Confused Archivists — mirrors: yyyyyy.info; yak.net; bozinex.archive";
+  return { title: "PROTOCOL ADDENDUM", body: text };
+}
+function createDisclaimer(obj){
+  const el = document.createElement('div'); el.className='disclaimer';
+  el.innerHTML = `<h4 style="color:${palette[Math.floor(Math.random()*palette.length)]}">${obj.title}</h4><pre>${obj.body}</pre><button class="close">ACKNOWLEDGE</button>`;
+  container.appendChild(el);
+  el.style.left = (10 + Math.random()*80) + '%';
+  el.style.top = (5 + Math.random()*80) + '%';
+  setTimeout(()=>el.classList.add('show'), 40);
+  if(Math.random() > 0.6) setTimeout(()=>createDisclaimer(randomLegal()), 220 + Math.random()*1200);
+  el.querySelector('.close').addEventListener('click', (e)=>{ e.stopPropagation(); el.classList.remove('show'); setTimeout(()=>el.remove(), 300); });
+  el.addEventListener('click', (e)=>{ e.stopPropagation(); burstConfetti(window.innerWidth*0.5, window.innerHeight*0.5); synthBlip(220 + Math.random()*880); });
+}
+
+/* controls */
+document.getElementById('pop-legal').addEventListener('click', ()=>createDisclaimer(randomLegal()));
+document.getElementById('legal-one')?.addEventListener('click', ()=>createDisclaimer(randomLegal()));
+document.getElementById('legal-many')?.addEventListener('click', ()=>{ for(let i=0;i<8;i++) setTimeout(()=>createDisclaimer(randomLegal()), i*140); });
+document.getElementById('rain-legal').addEventListener('click', ()=>{ for(let i=0;i<120;i++) setTimeout(()=>createDisclaimer(randomLegal()), i*80); });
+
+/* float Boz click */
+document.getElementById('floatBoz').addEventListener('click', ()=>{
+  for(let i=0;i<12;i++) setTimeout(()=>createDisclaimer(randomLegal()), i*120);
+  burstConfetti(innerWidth*0.85, innerHeight*0.85);
+  synthBlip(660 + Math.random()*440);
+});
+
+/* spawn-sprite button: add many pixel sprites quickly */
+document.getElementById('spawn-sprite').addEventListener('click', ()=>{
+  for(let i=0;i<240;i++){
+    sprites.push({x:Math.random()*pCanvas.width,y:Math.random()*pCanvas.height,vx:(Math.random()-0.5)*3,vy:(Math.random()-0.5)*1.6,w:8,h:6,color:palette[Math.floor(Math.random()*palette.length)],frame:0});
+  }
+});
+
+/* keyboard easter egg: type BOZ quickly to trigger legal rain */
+let seq=''; window.addEventListener('keydown', (e)=>{ seq += e.key.toLowerCase(); if(seq.length>12) seq=seq.slice(-12); if(seq.includes('boz')){ for(let i=0;i<24;i++) setTimeout(()=>createDisclaimer(randomLegal()), i*80); burstConfetti(Math.random()*innerWidth, Math.random()*innerHeight); seq=''; } });
+
+/* initial cascade for immediate effect */
+setTimeout(()=>{ for(let i=0;i<6;i++) setTimeout(()=>createDisclaimer(randomLegal()), i*180); }, 600);
+</script>
+</body>
+</html>
