@@ -65,6 +65,7 @@ let player = {
 let enemy = null;
 let eventLog = [];
 let LEVEL_UP_EXP = 100;
+let level = 1;
 
 function log(text) {
     eventLog.push(text);
@@ -81,38 +82,38 @@ function generateEnemy() {
     const enemies = [
         {
             Name: "Goblin",
-            HP: () => rand(5, 15),
-            AC: () => rand(10, 15)
+            HP: () => rand(5, 15) + level * 2,
+            AC: () => rand(10, 15) + Math.floor(level / 2)
         },
         {
             Name: "Goblin Brute",
-            HP: () => rand(7, 17),
-            AC: () => rand(12, 17)
+            HP: () => rand(5, 15) + level * 2,
+            AC: () => rand(10, 15) + Math.floor(level / 2)
         },
         {
             Name: "Orc",
-            HP: () => rand(20, 30),
-            AC: () => rand(5, 10)
+            HP: () => rand(5, 15) + level * 2,
+            AC: () => rand(10, 15) + Math.floor(level / 2)
         },
         {
             Name: "Hovva",
-            HP: () => rand(6, 12),
-            AC: () => rand(8, 12)
+            HP: () => rand(5, 15) + level * 2,
+            AC: () => rand(10, 15) + Math.floor(level / 2)
         },
         {
             Name: "bandit",
-            HP: () => rand(5, 17),
-            AC: () => rand(10, 16)
+            HP: () => rand(5, 15) + level * 2,
+            AC: () => rand(10, 15) + Math.floor(level / 2)
         },
         {
             Name: "animated door",
-            HP: () => rand(0, 1),
-            AC: () => rand(50, 51)
+            HP: () => rand(5, 15) + level * 2,
+            AC: () => rand(10, 15) + Math.floor(level / 2)
         },
                 {
             Name: "Unicycle Wizard",
-            HP: () => rand(10, 20),
-            AC: () => rand(9, 11)
+            HP: () => rand(5, 15) + level * 2,
+            AC: () => rand(10, 15) + Math.floor(level / 2)
         },
         
     ];
@@ -250,6 +251,7 @@ function gainEXP(amount) {
     if (player.EXP >= LEVEL_UP_EXP) {
         player.EXP -= LEVEL_UP_EXP;
         LEVEL_UP_EXP += 50;
+        level += 1;
         player.HP += 5;
         player.Strength++;
         log("LEVEL UP! +HP and +Strength");
