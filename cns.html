@@ -26,6 +26,10 @@
         border: 1px solid white;
         cursor: pointer;
     }
+    button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
 </style>
 </head>
 <body>
@@ -35,7 +39,7 @@
 <div id="log"></div>
 
 <div>
-    <button onclick="performAction('explore')">Explore</button>
+    <button id="exploreBtn" onclick="performAction('explore')">Explore</button>
     <button onclick="performAction('rest')">Rest</button>
     <button onclick="performAction('status')">Status</button>
     <button onclick="performAction('inventory')">Inventory</button>
@@ -97,6 +101,10 @@ function addToInventory(item) {
     }
 }
 
+function updateExploreButton() {
+    document.getElementById("exploreBtn").disabled = (enemy !== null);
+}
+
 function performAction(action) {
 
     if (action === "explore") {
@@ -105,6 +113,7 @@ function performAction(action) {
         if (roll < 0.3) {
             enemy = generateEnemy();
             log(`You encountered a ${enemy.Name}! HP: ${enemy.HP}, AC: ${enemy.AC}`);
+            updateExploreButton();
         } 
         else if (roll < 0.6) {
             let item = generateItem();
@@ -147,6 +156,7 @@ function performAction(action) {
             log("CRITICAL HIT! Enemy defeated!");
             gainEXP(20);
             enemy = null;
+            updateExploreButton();
         }
         else if (attackRoll >= enemy.AC) {
             let dmg = rand(1, 6) + player.Strength;
@@ -157,6 +167,7 @@ function performAction(action) {
                 gainEXP(15);
                 player.Gold += rand(5, 10);
                 enemy = null;
+                updateExploreButton();
             } else {
                 log(`You deal ${dmg} damage. Enemy HP: ${enemy.HP}`);
                 enemyAttack();
