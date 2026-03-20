@@ -109,6 +109,11 @@ function generateEnemy() {
             HP: () => rand(0, 1),
             AC: () => rand(50, 51)
         },
+                {
+            Name: "Unicycle Wizard",
+            HP: () => rand(10, 20),
+            AC: () => rand(9, 11)
+        },
         
     ];
 
@@ -130,7 +135,9 @@ function generateItem() {
         "piece of lint", "piece of lint", "piece of lint",
         "piece of lint", "button", "button",
         "herb pouch", "can of worms", "gold tooth",
-        "hovva wing", "orc skull", "Ent Bark"
+        "hovva wing", "orc skull", "Ent Bark",
+        "strange amulet", "strange token", "strange rock",
+        "flat unicycle tyre", "bike seat", "crystal scabbard"
     ];
     return items[rand(0, items.length - 1)];
 }
