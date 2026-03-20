@@ -78,10 +78,41 @@ function rand(min, max) {
 }
 
 function generateEnemy() {
+    const enemies = [
+        {
+            Name: "Goblin",
+            HP: () => rand(5, 15),
+            AC: () => rand(10, 15)
+        },
+        {
+            Name: "Goblin Brute",
+            HP: () => rand(7, 17),
+            AC: () => rand(12, 17)
+        },
+        {
+            Name: "Orc",
+            HP: () => rand(20, 30),
+            AC: () => rand(5, 10)
+        },
+        {
+            Name: "Hovva",
+            HP: () => rand(6, 12),
+            AC: () => rand(8, 12)
+        },
+        {
+            Name: "bandit",
+            HP: () => rand(5, 17),
+            AC: () => rand(10, 16)
+        },
+        
+    ];
+
+    const enemyType = enemies[Math.floor(Math.random() * enemies.length)];
+
     return {
-        HP: rand(5, 15),
-        AC: rand(10, 15),
-        Name: "Goblin"
+        Name: enemyType.Name,
+        HP: enemyType.HP(),
+        AC: enemyType.AC()
     };
 }
 
@@ -91,9 +122,10 @@ function generateItem() {
         "Rusty Sword", "Golden Coin", "A Book about soil",
         "Goblin mail", "Dragon kir", "rusty sword",
         "Silver Key", "Health Potion", "Golden Coin",
-        "lint", "lint", "lint",
-        "lint", "button", "button",
-        "herb pouch", "can of worms", "gold tooth"
+        "piece of lint", "piece of lint", "piece of lint",
+        "piece of lint", "button", "button",
+        "herb pouch", "can of worms", "gold tooth",
+        "hovva wing", "orc skull", "Ent Bark"
     ];
     return items[rand(0, items.length - 1)];
 }
