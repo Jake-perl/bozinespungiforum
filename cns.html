@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cellars and Snakes (Web)</title>
+<style>
+    body {
+        background: black;
+        color: white;
+        font-family: monospace;
+        margin: 0;
+        padding: 10px;
+    }
+    #log {
+        height: 400px;
+        overflow-y: auto;
+        border: 1px solid white;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    button {
+        margin: 3px;
+        padding: 8px;
+        background: #222;
+        color: white;
+        border: 1px solid white;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<h2>Cellars and Snakes v0.0.6 (Web)</h2>
+
+<div id="log"></div>
+
+<div>
+    <button onclick="performAction('explore')">Explore</button>
+    <button onclick="performAction('rest')">Rest</button>
+    <button onclick="performAction('status')">Status</button>
+    <button onclick="performAction('inventory')">Inventory</button>
+    <button onclick="performAction('attack')">Attack</button>
+</div>
+
+<script>
+let player = {
+    HP: 20,
+    MP: 10,
+    EXP: 0,
+    Strength: 3,
+    Dexterity: 2,
+    Constitution: 3,
+    Intelligence: 1,
+    Wisdom: 2,
+    Charisma: 1,
+    Inventory: {},
+    Gold: 0,
+    AP: 3
+};
+
+let enemy = null;
+let eventLog = [];
+let LEVEL_UP_EXP = 100;
+
+function log(text) {
+    eventLog.push(text);
+    let logDiv = document.getElementById("log");
+    logDiv.innerHTML = eventLog.slice(-20).join("<br>");
+    logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+function rand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generateEnemy() {
+    return {
+        HP: rand(5, 15),
+        AC: rand(10, 15),
+        Name: "Goblin"
+    };
+}
+
+function generateItem() {
+    let items = [
+        "Health Potion", "Magic Scroll", "Silver Key",
+        "Rusty Sword", "Golden Coin", "A Book about soil"
+    ];
+    return items[rand(0, items.length - 1)];
+}
+
+function addToInventory(item) {
+    if (player.Inventory[item]) {
+        player.Inventory[item]++;
+    } else {
+        player.Inventory[item] = 1;
+    }
+}
+
+function performAction(action) {
+
+    if (action === "explore") {
+        let roll = Math.random();
+
+        if (roll < 0.3) {
+            enemy = generateEnemy();
+            log(`You encountered a ${enemy.Name}! HP: ${enemy.HP}, AC: ${enemy.AC}`);
+        } 
+        else if (roll < 0.6) {
+            let item = generateItem();
+            addToInventory(item);
+            log(`You found a ${item}!`);
+        } 
+        else {
+            log("You explore but find nothing.");
+        }
+    }
+
+    else if (action === "rest") {
+        player.HP = Math.min(player.HP + 5, 20);
+        player.AP = Math.min(player.AP + 1, 3);
+        log("You rest and recover HP and AP.");
+    }
+
+    else if (action === "status") {
+        log(`HP:${player.HP} MP:${player.MP} EXP:${player.EXP}/${LEVEL_UP_EXP}
+        STR:${player.Strength} DEX:${player.Dexterity}`);
+    }
+
+    else if (action === "inventory") {
+        let items = Object.entries(player.Inventory)
+            .map(([k,v]) => `${v}x ${k}`);
+        log(items.length ? items.join(", ") : "Inventory empty.");
+    }
+
+    else if (action === "attack") {
+        if (!enemy) {
+            log("No enemy to attack.");
+            return;
+        }
+
+        let roll = rand(1, 20);
+        let attackRoll = roll + player.Strength;
+
+        if (roll === 20) {
+            enemy.HP = 0;
+            log("CRITICAL HIT! Enemy defeated!");
+            gainEXP(20);
+            enemy = null;
+        }
+        else if (attackRoll >= enemy.AC) {
+            let dmg = rand(1, 6) + player.Strength;
+            enemy.HP -= dmg;
+
+            if (enemy.HP <= 0) {
+                log(`You deal ${dmg} damage and kill the enemy!`);
+                gainEXP(15);
+                player.Gold += rand(5, 10);
+                enemy = null;
+            } else {
+                log(`You deal ${dmg} damage. Enemy HP: ${enemy.HP}`);
+                enemyAttack();
+            }
+        } 
+        else {
+            log("You missed!");
+            enemyAttack();
+        }
+    }
+
+    checkDeath();
+}
+
+function enemyAttack() {
+    let roll = rand(1, 20);
+
+    if (roll >= 10) {
+        let dmg = rand(1, 6);
+        player.HP -= dmg;
+        log(`Enemy hits you for ${dmg}! HP: ${player.HP}`);
+    } else {
+        log("Enemy missed!");
+    }
+}
+
+function gainEXP(amount) {
+    player.EXP += amount;
+    log(`+${amount} EXP`);
+
+    if (player.EXP >= LEVEL_UP_EXP) {
+        player.EXP -= LEVEL_UP_EXP;
+        LEVEL_UP_EXP += 50;
+        player.HP += 5;
+        player.Strength++;
+        log("LEVEL UP! +HP and +Strength");
+    }
+}
+
+function checkDeath() {
+    if (player.HP <= 0) {
+        log("You died. Game Over.");
+        document.querySelectorAll("button").forEach(b => b.disabled = true);
+    }
+}
+
+log("Game Started");
+</script>
+
+</body>
+</html>
