@@ -38,6 +38,19 @@
 
 <div id="log"></div>
 
+<img id="doorImage"
+     src="cnsanimateddoor.png"
+     width="32"
+     height="32"
+     style="
+        position: fixed;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: none;
+        image-rendering: pixelated;
+     ">
+    
 <div>
     <button id="exploreBtn" onclick="performAction('explore')">Explore</button>
     <button onclick="performAction('rest')">Rest</button>
@@ -163,8 +176,16 @@ function performAction(action) {
         if (roll < 0.3) {
             enemy = generateEnemy();
             log(`You encountered a ${enemy.Name}! HP: ${enemy.HP}, AC: ${enemy.AC}`);
+            let doorImg = document.getElementById("doorImage");
+
+            if (enemy.Name === "animated door") {
+                doorImg.style.display = "block";
+            } else {
+                doorImg.style.display = "none";
+            }
+
             updateExploreButton();
-        } 
+        }
         else if (roll < 0.6) {
             let item = generateItem();
             addToInventory(item);
@@ -206,6 +227,7 @@ function performAction(action) {
             log("CRITICAL HIT! Enemy defeated!");
             gainEXP(20);
             enemy = null;
+            document.getElementById("doorImage").style.display = "none";
             updateExploreButton();
         }
         else if (attackRoll >= enemy.AC) {
@@ -217,6 +239,7 @@ function performAction(action) {
                 gainEXP(15);
                 player.Gold += rand(5, 10);
                 enemy = null;
+                document.getElementById("doorImage").style.display = "none";
                 updateExploreButton();
             } else {
                 log(`You deal ${dmg} damage. Enemy HP: ${enemy.HP}`);
