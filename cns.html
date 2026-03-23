@@ -34,7 +34,7 @@
 </head>
 <body>
 
-<h2>Cellars and Snakes v0.0.7b (Web)</h2>
+<h2>Cellars and Snakes v0.1.1a (Web)</h2>
 
 <div id="log"></div>
 
@@ -57,6 +57,11 @@
     <button onclick="performAction('status')">Status</button>
     <button onclick="performAction('inventory')">Inventory</button>
     <button onclick="performAction('attack')">Attack</button>
+    <button id="shopBtn"
+            onclick="performAction('shop')"
+            style="display:none;">
+        Shop
+    </button>
 </div>
 
 <script>
@@ -76,6 +81,7 @@ let player = {
     AP: 3
 };
 
+let shopOpen = false;
 let enemy = null;
 let eventLog = [];
 let LEVEL_UP_EXP = 100;
@@ -145,7 +151,7 @@ function generateItem() {
     let items = [
         "Health Potion", "Magic Scroll", "Silver Key",
         "Rusty Sword", "Golden Coin", "A Book about soil",
-        "Goblin mail", "Dragon kir", "rusty sword",
+        "Goblin mail", "Dragon kir", "rusty bucket",
         "Silver Key", "Health Potion", "Golden Coin",
         "piece of lint", "piece of lint", "piece of lint",
         "piece of lint", "button", "button",
@@ -169,11 +175,80 @@ function updateExploreButton() {
     document.getElementById("exploreBtn").disabled = (enemy !== null);
 }
 
+function shopBuy(option) {
+
+    if (!shopOpen) return;
+
+    if (option === 1) {
+
+        if (player.Gold >= 25) {
+
+            player.Gold -= 25;
+            player.Strength += 1;
+
+            log("+1 Strength purchased!");
+
+        } else {
+            log("Not enough gold.");
+        }
+    }
+
+    else if (option === 2) {
+
+        if (player.Gold >= 20) {
+
+            player.Gold -= 20;
+            player.MaxHP += 5;
+
+            log("+5 Max HP purchased!");
+
+        } else {
+            log("Not enough gold.");
+        }
+    }
+
+    else if (option === 3) {
+
+        let itemCount = Object.values(player.Inventory)
+                              .reduce((a,b)=>a+b,0);
+
+        if (itemCount > 0) {
+
+            let goldEarned = itemCount * 5;
+
+            player.Gold += goldEarned;
+            player.Inventory = {};
+
+            log(`Sold items for ${goldEarned} gold.`);
+
+        } else {
+
+            log("No items to sell.");
+        }
+    }
+
+    log("Merchant leaves.");
+
+    shopOpen = false;
+
+    document.getElementById("shopBtn").style.display = "none";
+    document.getElementById("exploreBtn").disabled = false;
+    }
+
 function performAction(action) {
 
     if (action === "explore") {
-        let roll = Math.random();
+        if (rand(1,100) === 1) {
+            shopOpen = true;
+            log("You stumble apon the layer of a renouned merchant!");
 
+            document.getElementById("shopBtn").style.display = "inline";
+            document.getElementById("exploreBtn").disabled = true;
+
+            return;
+        }
+        let roll = Math.random();
+        
         if (roll < 0.3) {
             enemy = generateEnemy();
             log(`You encountered a ${enemy.Name}! HP: ${enemy.HP}, AC: ${enemy.AC}`);
@@ -205,7 +280,7 @@ function performAction(action) {
 
     else if (action === "status") {
         log(`HP:${player.HP} MP:${player.MP} EXP:${player.EXP}/${LEVEL_UP_EXP}
-        STR:${player.Strength} DEX:${player.Dexterity} LVL:${level}`);
+        STR:${player.Strength} DEX:${player.Dexterity} LVL:${level} GOLD:${player.Gold}`);
     }
 
     else if (action === "inventory") {
@@ -251,6 +326,16 @@ function performAction(action) {
             log("You missed!");
             enemyAttack();
         }
+    }
+    else if (action === "shop") {
+
+        if (!shopOpen) return;
+
+        log("Merchant offers:");
+        log("1) +1 Strength (25 gold)");
+        log("2) +5 Max HP (20 gold)");
+        log("3) Sell all items (5 gold each)");
+        log("Type shopBuy(1), shopBuy(2), or shopBuy(3) in console.");
     }
 
     checkDeath();
