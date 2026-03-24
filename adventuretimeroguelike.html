@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Adventure Time Infinite Roguelike</title>
+
+<style>
+body {
+    margin: 0;
+    background: black;
+    color: white;
+    font-family: monospace;
+}
+
+canvas {
+    display: block;
+    margin: auto;
+    background: black;
+}
+
+#log {
+    height: 120px;
+    overflow-y: auto;
+    border-top: 2px solid white;
+    padding: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+<div id="log"></div>
+
+<script>
+
+// ======================
+// CONFIG
+// ======================
+
+const TILE_SIZE = 24;
+const VIEW_W = 31;
+const VIEW_H = 21;
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = VIEW_W * TILE_SIZE;
+canvas.height = VIEW_H * TILE_SIZE;
+
+const logDiv = document.getElementById("log");
+
+// ======================
+// UTILS
+// ======================
+
+function rand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function log(text) {
+    logDiv.innerHTML += text + "<br>";
+    logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+// ======================
+// PLAYER
+// ======================
+
+let player = {
+    x: 0,
+    y: 0,
+    hp: 30,
+    maxHp: 30,
+    atk: 6,
+    color: "#00BFFF" // Finn blue
+};
+
+// ======================
+// WORLD GENERATION
+// ======================
+
+let world = {};
+let enemies = [];
+let items = [];
+
+function tileKey(x, y) {
+    return x + "," + y;
+}
+
+function generateTile(x, y) {
+
+    let r = Math.random();
+
+    if (r < 0.70) {
+        return "grass";
+    }
+    else if (r < 0.85) {
+        return "candy";
+    }
+    else {
+        return "slime";
+    }
+
+}
+
+function getTile(x, y) {
+
+    let key = tileKey(x, y);
+
+    if (!(key in world)) {
+        world[key] = generateTile(x, y);
+
+        // Spawn enemies randomly
+        if (Math.random() < 0.05) {
+            spawnEnemy(x, y);
+        }
+
+        // Spawn items
+        if (Math.random() < 0.03) {
+            spawnItem(x, y);
+        }
+    }
+
+    return world[key];
+}
+
+// ======================
+// ENEMIES
+// ======================
+
+function spawnEnemy(x, y) {
+
+    let types = [
+        {
+            name: "Candy Slime",
+            hp: 8,
+            atk: 3,
+            color: "pink"
+        },
+        {
+            name: "Ice Golem",
+            hp: 12,
+            atk: 4,
+            color: "cyan"
+        },
+        {
+            name: "Marceline Bat",
+            hp: 6,
+            atk: 5,
+            color: "purple"
+        }
+    ];
+
+    let t = types[rand(0, types.length - 1)];
+
+    enemies.push({
+        x: x,
+        y: y,
+        name: t.name,
+        hp: t.hp,
+        atk: t.atk,
+        color: t.color
+    });
+
+}
+
+function enemyAt(x, y) {
+    return enemies.find(e => e.x === x && e.y === y);
+}
+
+// ======================
+// ITEMS
+// ======================
+
+function spawnItem(x, y) {
+
+    items.push({
+        x: x,
+        y: y,
+        type: "food"
+    });
+
+}
+
+function itemAt(x, y) {
+    return items.find(i => i.x === x && i.y === y);
+}
+
+// ======================
+// DRAW
+// ======================
+
+function drawTile(tile, sx, sy) {
+
+    if (tile === "grass") ctx.fillStyle = "#228B22";
+    if (tile === "candy") ctx.fillStyle = "#FF69B4";
+    if (tile === "slime") ctx.fillStyle = "#7FFF00";
+
+    ctx.fillRect(
+        sx * TILE_SIZE,
+        sy * TILE_SIZE,
+        TILE_SIZE,
+        TILE_SIZE
+    );
+
+}
+
+function draw() {
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    let startX = player.x - Math.floor(VIEW_W/2);
+    let startY = player.y - Math.floor(VIEW_H/2);
+
+    for (let y = 0; y < VIEW_H; y++) {
+        for (let x = 0; x < VIEW_W; x++) {
+
+            let wx = startX + x;
+            let wy = startY + y;
+
+            let tile = getTile(wx, wy);
+
+            drawTile(tile, x, y);
+
+            // Items
+            let item = itemAt(wx, wy);
+            if (item) {
+
+                ctx.fillStyle = "yellow";
+                ctx.fillRect(
+                    x*TILE_SIZE+6,
+                    y*TILE_SIZE+6,
+                    12,
+                    12
+                );
+
+            }
+
+            // Enemies
+            let enemy = enemyAt(wx, wy);
+            if (enemy) {
+
+                ctx.fillStyle = enemy.color;
+
+                ctx.fillRect(
+                    x*TILE_SIZE+4,
+                    y*TILE_SIZE+4,
+                    16,
+                    16
+                );
+
+            }
+
+        }
+    }
+
+    // Player
+
+    ctx.fillStyle = player.color;
+
+    ctx.fillRect(
+        Math.floor(VIEW_W/2)*TILE_SIZE+4,
+        Math.floor(VIEW_H/2)*TILE_SIZE+4,
+        16,
+        16
+    );
+
+    drawUI();
+
+}
+
+function drawUI() {
+
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,200,40);
+
+    ctx.fillStyle = "white";
+    ctx.fillText(
+        "HP: " + player.hp + "/" + player.maxHp,
+        10,
+        15
+    );
+
+}
+
+// ======================
+// TURN SYSTEM
+// ======================
+
+function move(dx, dy) {
+
+    let nx = player.x + dx;
+    let ny = player.y + dy;
+
+    let enemy = enemyAt(nx, ny);
+
+    if (enemy) {
+        attack(enemy);
+        return;
+    }
+
+    player.x = nx;
+    player.y = ny;
+
+    checkItem();
+
+    enemyTurn();
+
+    draw();
+
+}
+
+function attack(enemy) {
+
+    enemy.hp -= player.atk;
+
+    log("You hit " + enemy.name);
+
+    if (enemy.hp <= 0) {
+
+        log(enemy.name + " defeated!");
+
+        enemies = enemies.filter(e => e !== enemy);
+
+    }
+    else {
+
+        player.hp -= enemy.atk;
+
+        log(enemy.name + " hits you!");
+
+        if (player.hp <= 0) {
+            log("You died!");
+            alert("Game Over!");
+            location.reload();
+        }
+
+    }
+
+    enemyTurn();
+
+    draw();
+
+}
+
+function enemyTurn() {
+
+    for (let enemy of enemies) {
+
+        if (Math.abs(enemy.x - player.x) <= 1 &&
+            Math.abs(enemy.y - player.y) <= 1) {
+
+            player.hp -= enemy.atk;
+
+            log(enemy.name + " attacks!");
+
+            if (player.hp <= 0) {
+                alert("Game Over!");
+                location.reload();
+            }
+
+        }
+
+    }
+
+}
+
+function checkItem() {
+
+    let item = itemAt(player.x, player.y);
+
+    if (item) {
+
+        player.hp = Math.min(
+            player.maxHp,
+            player.hp + 5
+        );
+
+        log("You ate food!");
+
+        items = items.filter(i => i !== item);
+
+    }
+
+}
+
+// ======================
+// INPUT
+// ======================
+
+document.addEventListener("keydown", e => {
+
+    if (e.key === "ArrowUp") move(0,-1);
+    if (e.key === "ArrowDown") move(0,1);
+    if (e.key === "ArrowLeft") move(-1,0);
+    if (e.key === "ArrowRight") move(1,0);
+
+});
+
+// ======================
+// START
+// ======================
+
+log("Welcome to the Land of Ooo!");
+
+draw();
+
+</script>
+
+</body>
+</html>
