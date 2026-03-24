@@ -34,7 +34,7 @@
 </head>
 <body>
 
-<h2>Cellars and Snakes v0.1.1a (Web)</h2>
+<h2>Cellars and Snakes v0.1.2b (Web)</h2>
 
 <div id="log"></div>
 
@@ -62,6 +62,26 @@
             style="display:none;">
         Shop
     </button>
+</div>
+
+<div id="shopControls" style="display:none; margin-top:5px;">
+
+    <button onclick="shopBuy(1)">
+        Buy +1 Strength (25g)
+    </button>
+
+    <button onclick="shopBuy(2)">
+        Buy +5 Max HP (20g)
+    </button>
+
+    <button onclick="shopBuy(3)">
+        Sell All Items
+    </button>
+
+    <button onclick="leaveShop()">
+        Leave Shop
+    </button>
+
 </div>
 
 <script>
@@ -133,7 +153,7 @@ function generateEnemy() {
                 {
             Name: "Unicycle Wizard",
             HP: () => rand(5, 10) + level * 2,
-            AC: () => rand(20, 22) + Math.floor(level / 2)
+            AC: () => rand(16, 20) + Math.floor(level / 2)
         },
         
     ];
@@ -187,9 +207,11 @@ function shopBuy(option) {
             player.Strength += 1;
 
             log("+1 Strength purchased!");
+            log(`Gold Remaining: ${player.Gold}`);
 
         } else {
             log("Not enough gold.");
+            log(`Gold: ${player.Gold}`);
         }
     }
 
@@ -201,9 +223,11 @@ function shopBuy(option) {
             player.MaxHP += 5;
 
             log("+5 Max HP purchased!");
+            log(`Gold remaining: ${player.Gold}`);
 
         } else {
             log("Not enough gold.");
+            log(`Gold: ${player.Gold}`);
         }
     }
 
@@ -220,30 +244,41 @@ function shopBuy(option) {
             player.Inventory = {};
 
             log(`Sold items for ${goldEarned} gold.`);
+            log(`Gold: ${player.Gold}`);
 
         } else {
 
             log("No items to sell.");
         }
     }
+}
 
-    log("Merchant leaves.");
+function leaveShop() {
+
+    log("You leave the merchant's lair.");
 
     shopOpen = false;
 
-    document.getElementById("shopBtn").style.display = "none";
+    document.getElementById("shopControls").style.display = "none";
+
     document.getElementById("exploreBtn").disabled = false;
-    }
+
+}
 
 function performAction(action) {
 
     if (action === "explore") {
         if (rand(1,100) === 1) {
             shopOpen = true;
-            log("You stumble apon the layer of a renouned merchant!");
+            log("You stumble apon the layer of a highly renowned merchant!");
 
-            document.getElementById("shopBtn").style.display = "inline";
+            document.getElementById("shopBtn").style.display = "none";
+            document.getElementById("shopControls").style.display = "inline";
+
             document.getElementById("exploreBtn").disabled = true;
+
+            log("Merchant appears!");
+            log("Choose an action below.");
 
             return;
         }
