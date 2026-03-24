@@ -201,9 +201,9 @@ function shopBuy(option) {
 
     if (option === 1) {
 
-        if (player.Gold >= 25) {
+        if (player.Gold >= 50) {
 
-            player.Gold -= 25;
+            player.Gold -= 50;
             player.Strength += 1;
 
             log("+1 Strength purchased!");
@@ -220,9 +220,9 @@ function shopBuy(option) {
         if (player.Gold >= 20) {
 
             player.Gold -= 20;
-            player.MaxHP += 5;
+            player.MaxHP += 1;
 
-            log("+5 Max HP purchased!");
+            log("+1 Max HP purchased!");
             log(`Gold remaining: ${player.Gold}`);
 
         } else {
@@ -367,8 +367,8 @@ function performAction(action) {
         if (!shopOpen) return;
 
         log("Merchant offers:");
-        log("1) +1 Strength (25 gold)");
-        log("2) +5 Max HP (20 gold)");
+        log("1) +1 Strength (50 gold)");
+        log("2) +1 Max HP (20 gold)");
         log("3) Sell all items (5 gold each)");
         log("Type shopBuy(1), shopBuy(2), or shopBuy(3) in console.");
     }
