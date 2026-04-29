@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RSS Survival Game</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: black;
+    color: white;
+    text-align: center;
+}
+
+canvas {
+    background: #111;
+    display: block;
+    margin: auto;
+    border: 2px solid white;
+}
+
+#score {
+    font-size: 24px;
+    margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>RSS Survival Game 🎮</h1>
+<div id="score">Score: 0</div>
+
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let score = 0;
+let gameOver = false;
+
+// Player
+let player = {
+    x: 50,
+    y: 200,
+    size: 20,
+    speed: 4
+};
+
+// Enemy (RED FOLLOWER)
+let enemy = {
+    x: 550,
+    y: 200,
+    size: 20,
+    speed: 1.2,
+    color: "red"
+};
+
+// Letters
+let letters = [];
+const rssLetters = ["R", "S", "S"];
+
+function spawnLetter() {
+    let letter = {
+        x: Math.random() * (canvas.width - 20),
+        y: Math.random() * (canvas.height - 20),
+        char: rssLetters[Math.floor(Math.random() * 3)],
+        size: 20
+    };
+    letters.push(letter);
+}
+
+for (let i = 0; i < 5; i++) {
+    spawnLetter();
+}
+
+// Controls
+let keys = {};
+
+document.addEventListener("keydown", e => {
+    keys[e.key] = true;
+
+    if (gameOver && e.key === "r") {
+        restartGame();
+    }
+});
+
+document.addEventListener("keyup", e => {
+    keys[e.key] = false;
+});
+
+// Restart function
+function restartGame() {
+    score = 0;
+    gameOver = false;
+
+    player.x = 50;
+    player.y = 200;
+
+    enemy.x = 550;
+    enemy.y = 200;
+
+    letters = [];
+    for (let i = 0; i < 5; i++) {
+        spawnLetter();
+    }
+
+    document.getElementById("score").textContent = "Score: 0";
+}
+
+// Update game
+function update() {
+
+    if (gameOver) return;
+
+    // Player movement
+    if (keys["ArrowUp"]) player.y -= player.speed;
+    if (keys["ArrowDown"]) player.y += player.speed;
+    if (keys["ArrowLeft"]) player.x -= player.speed;
+    if (keys["ArrowRight"]) player.x += player.speed;
+
+    // Keep player inside canvas
+    player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+    player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+
+    // Enemy follows player
+    let dx = player.x - enemy.x;
+    let dy = player.y - enemy.y;
+
+    let distance = Math.sqrt(dx * dx + dy * dy);
+
+    enemy.x += (dx / distance) * enemy.speed;
+    enemy.y += (dy / distance) * enemy.speed;
+
+    // Letter collection
+    letters.forEach((letter, index) => {
+        if (
+            player.x < letter.x + letter.size &&
+            player.x + player.size > letter.x &&
+            player.y < letter.y + letter.size &&
+            player.y + player.size > letter.y
+        ) {
+            score++;
+            document.getElementById("score").textContent =
+                "Score: " + score;
+
+            letters.splice(index, 1);
+            spawnLetter();
+
+            // Slightly increase enemy speed
+            enemy.speed += 0.05;
+        }
+    });
+
+    // Enemy collision = GAME OVER
+    if (
+        player.x < enemy.x + enemy.size &&
+        player.x + player.size > enemy.x &&
+        player.y < enemy.y + enemy.size &&
+        player.y + player.size > enemy.y
+    ) {
+        gameOver = true;
+    }
+}
+
+// Draw everything
+function draw() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Player
+    ctx.fillStyle = "lime";
+    ctx.fillRect(player.x, player.y, player.size, player.size);
+
+    // Enemy (RED)
+    ctx.fillStyle = enemy.color;
+    ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size);
+
+    // Letters
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+
+    letters.forEach(letter => {
+        ctx.fillText(letter.char, letter.x, letter.y + 15);
+    });
+
+    // Game Over screen
+    if (gameOver) {
+        ctx.fillStyle = "white";
+        ctx.font = "40px Arial";
+        ctx.fillText("GAME OVER", 190, 180);
+
+        ctx.font = "20px Arial";
+        ctx.fillText("Press R to Restart", 210, 220);
+    }
+}
+
+// Game loop
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
